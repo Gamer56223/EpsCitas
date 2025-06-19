@@ -1,10 +1,44 @@
 import { View, Text, TextInput, StyleSheet } from "react-native";
 import BottonComponent from "../../components/BottonComponent";
-import { useState } from "react";
+import { useState, } from "react";
+import { loginUser } from "../../Src/Navegation/Services/AuthService";
+
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setLoading(true);
+
+    try {
+      const result = await loginUser(email, password);
+      if (result.success) {
+        Alert.alert("Éxito", "¡Bienvenido!", [
+          {
+            text: "OK",
+            onPress : () => {
+              console.log ("Login exitoso, redirigiendo automáticamente...")
+            }
+          }
+        ]);
+      }else {
+        Alert.alert(
+          "Error de Login",
+          result.message || "Ocurrió un error al iniciar sesión."
+        );
+      }
+    } catch (error) {
+      console.error("Error inesperado en login:", error);
+      Alert.alert(
+        "Error",
+        "Ocurrió un error inesperado al intentar iniciar sesión."
+      );
+    } finally {
+      setLoading(false); // Siempre desactiva el indicador de carga
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -25,12 +59,14 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setPassword}
       />
       <BottonComponent
-        title="Iniciar Sesión"
-        onPress={() => console.log("Login")}
+        title="Ingresar"
+        onPress={handleLogin}
+        disabled={loading}
       />
-      <BottonComponent
-        title="Registrarse"
+      <BottonComponent 
+        title="¿No tienes cuenta?, Regístrare"
         onPress={() => navigation.navigate("Registro")}
+        style={{ backgroundColor: "#43A047"}}
       />
     </View>
   );
