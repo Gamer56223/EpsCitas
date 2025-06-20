@@ -104,8 +104,8 @@ export default function PantallaPerfil({ navigation }) {
         <View style={styles.container}>
             <Text style={styles.title}>Perfil de Usuario</Text>
             <View style={styles.containerPerfil}>
-                <Text style={styles.profileText}>Nombre: {usuario.name || "No disponible"}</Text>
-                <Text style={styles.profileText}>Email: {usuario.email || "No disponible"}</Text>
+                <Text style={styles.profileText}>Nombre: {usuario.user.name || "No disponible"}</Text>
+                <Text style={styles.profileText}>Email: {usuario.user.email || "No disponible"}</Text>
 
                 <BotonComponent title="Editar Perfil" onPress={() => {}} />
                 <BotonComponent
