@@ -6,4 +6,5 @@ export default function DetalleCita (){
             <Text>Detalle Cita</Text>
         </View>
     );
+     
 }

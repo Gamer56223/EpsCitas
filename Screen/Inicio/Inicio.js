@@ -68,7 +68,7 @@ export default function Inicio() {
                         onPress={() => navigateToFlow('EspecialidadesFlow')}
                     >
                         <MaterialCommunityIcons name="professional-hexagon" size={24} color="red" />
-                        <Text style={styles.gridItemText}>Especailidades</Text>
+                        <Text style={styles.gridItemText}>Especialidades</Text>
                     </TouchableOpacity>
                     {/* Casilla de Medicos */}
                     <TouchableOpacity

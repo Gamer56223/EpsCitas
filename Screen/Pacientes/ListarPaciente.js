@@ -1,4 +1,5 @@
-import {View, Text, Button } from "react-native"
+import {View, Text, Button, StyleSheet, ScrollView } from "react-native"
+import BotonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
 
 export default function ListarPaciente ({navigation}){
     return (
