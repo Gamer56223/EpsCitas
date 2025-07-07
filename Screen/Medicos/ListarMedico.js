@@ -1,141 +1,160 @@
-import {View, Text, Button, StyleSheet, ScrollView } from "react-native"
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons
+import BotonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
+import MedicoCard from "../../components/MedicoCard";
+import { useNavigation } from "@react-navigation/native";
+import { listarMedicos, eliminarMedico } from "../../Src/Servicios/MedicoService";
 
-export default function ListarMedico ({navigation}){
-    const medicosEjemplo = [
-        { id: '1', Nombre: 'Angie', Apellido: 'Cardenas', Correo: 'cardenas@gmail', Telefono: '3108909090', TipoDocumento: 'CC', NumeroDocumento: '1052836128', Activo: 'TRUE'},
-        { id: '2', Nombre: 'Carlos', Apellido: 'Rodríguez', Correo: 'carlol@gmail', Telefono: '3213595990', TipoDocumento: 'CC', NumeroDocumento: '1052836122', Activo: 'TRUE'},
-        { id: '3', Nombre: 'Diane', Apellido: 'León', Correo: 'diane@gmail', Telefono: '3107890890', TipoDocumento: 'CC', NumeroDocumento: '1052836120', Activo: 'FALSE'},
-    ];
+export default function ListarMedico (){
+    const [medicos, setMedicos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigation = useNavigation();
+
+    const handleMedicos = async () => {
+        setLoading(true);
+        try {
+            const result = await listarMedicos();
+            if (result.success) {
+                setMedicos(result.data);
+            } else {
+                Alert.alert ("Error", result.message || "No se pudierón cargas los medicos");
+            }
+        } catch (error) {
+            Alert.alert ("Error", "No se pudierón cargas los medicos");
+        } finally {
+            setLoading(false);
+        }
+
+    };
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', handleMedicos);
+        return unsubscribe;
+    }, [navigation]);
+
+    const handleEliminar = (id) => {
+        Alert.alert(
+            "Eliminar Medico",
+            "¿Estás seguro de que deseas eliminar este medico?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+
+                    onPress: async () => {
+                        try {
+                            const result = await eliminarMedico(id);
+                            if (result.success) {
+                                // setEspecialidades (especialidades.filter((e) => e.id !== id));
+                                handleMedicos();
+                            } else {
+                                Alert.alert("Error", result.message || "No se pudo eliminar el Medico");
+                            }
+                        } catch (error) {
+                            Alert.alert("Error", "No se pudo eliminar el medico");
+                        }
+                    },
+                }
+            ]
+        )
+    }
+
+    const handleCrear = () => {
+        navigation.navigate('CrearMedico');
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#1976D2" />
+            </View>
+        );
+    }
+
+    const handleEditar = (medico) => {
+        navigation.navigate("EditarMedico", {medico});
+
+
+    }
+
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Listado de Medicos</Text>
-
-            <ScrollView style={styles.medicoScrollView}>
-                {medicosEjemplo.map((medico) => (
-                    <View key={medico.id} style={styles.medicoCard}>
-                        <Text style={styles.medicoTitle}>{medico.Nombre} {medico.Apellido}</Text> {/* Título ahora incluye nombre y apellido */}         
-                        <Text style={styles.medicoDetail}><Text style={styles.detailLabel}>Apellido: </Text>{medico.Apellido}</Text>
-                        <Text style={styles.medicoDetail}><Text style={styles.detailLabel}>Correo: </Text>{medico.Correo}</Text>
-                        <Text style={styles.medicoDetail}><Text style={styles.detailLabel}>Telefono: </Text>{medico.Telefono}</Text>
-                        <Text style={styles.medicoDetail}><Text style={styles.detailLabel}>TipoDocumento: </Text>{medico.TipoDocumento}</Text>
-                        <Text style={styles.medicoDetail}><Text style={styles.detailLabel}>NumeroDocumento: </Text>{medico.NumeroDocumento}</Text>
-                        <Text style={styles.medicoDetail}><Text style={styles.detailLabel}>Activo: </Text>{medico.Activo === 'TRUE' ? 'Sí' : 'No'}</Text>
-
-                        <View style={styles.buttonContainer}>
-                            <BotonComponent
-                                title="Ver Detalles"
-                                onPress={() => navigation.navigate("DetalleMedico", { medicoId: medico.id })}
-                                buttonStyle={styles.viewButton}
-                                textStyle={styles.buttonText}
-                            />
-                            <BotonComponent
-                                title="Editar"
-                                onPress={() => navigation.navigate("EditarMedico", { medicoId: medico.id })}
-                                buttonStyle={styles.editButton}
-                                textStyle={styles.buttonText}
-                            />
-                        </View>
-                    </View>
-                ))}
-            </ScrollView>
-
-            <BotonComponent
-                title="Agregar Nuevo Medico"
-                onPress={() => { /* navigation.navigate("CrearMedico") */ }}
-                buttonStyle={styles.newMedicoButton}
-                textStyle={styles.buttonText}
+        <View style={{flex: 1}}>
+            <FlatList
+            data={medicos}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+                <MedicoCard
+                medico = {item}
+                onEdit={() => handleEditar (item)}
+                onDelete={() => handleEliminar (item.id)}
             />
+            )}
+            ListEmptyComponent = {<Text style = {styles.emptyText}>No Hay Medicos Registrados. </Text>}
+            />
+
+            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
+                <View style={styles.botonCrearContent}>
+                    <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.botonCrearIcon} />
+                    <Text style={styles.textoBotonCrear}>Nuevo Medico</Text>
+                </View>
+            </TouchableOpacity>
         </View>
-    );
+    )
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: "#F0F4F8", // Fondo suave
-        alignItems: "center", // Centra el contenido horizontalmente
+        backgroundColor: '#F8F8F8',
+        paddingHorizontal: 10,
+        paddingTop: 10,
     },
-
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        marginBottom: 25,
-        color: "#2C3E50", // Color de título oscuro
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F8F8F8',
     },
-
-    medicoScrollView: {
-        width: "100%", 
-        flex: 1, 
+    emptyText: {
+        fontSize: 16,
+        color: '#7F8C8D',
+        textAlign: 'center',
+        marginTop: 50,
     },
-
-    medicoCard: {
-        backgroundColor: "skyblue", // Fondo blanco para cada tarjeta de cita
-        borderRadius: 10,
+    emptyListContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    botonCrear: { // Estilo para el TouchableOpacity
+        backgroundColor: '#1976D2', // Color de fondo
         padding: 15,
-        marginBottom: 15, // Espacio entre tarjetas
-        shadowColor: "#000", // Sombra suave
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3, // Elevación para Android
-       
+        borderRadius: 8,
+        alignItems: 'center',
+        margin: 10,
+        // Sombra para un efecto más bonito
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.27,
+        shadowRadius: 4.65,
+        elevation: 6,
     },
-
-    medicoTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 8,
-        color: "#34495E", // Color para el título de la cita
+    botonCrearContent: { // Contenedor interno para el icono y el texto
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-
-    medicoDetail: {
+    botonCrearIcon: { // Estilo para el icono
+        marginRight: 8, // Espacio entre el icono y el texto
+    },
+    textoBotonCrear: { // Estilo para el texto del botón
+        color: '#FFFFFF',
         fontSize: 16,
-        color: "#5C6F7F", // Color para los detalles de la cita
-        marginBottom: 4,
-    },
-    // Nuevo estilo para aplicar negrita solo al nombre del campo
-    detailLabel: {
         fontWeight: 'bold',
-    },
-
-    buttonContainer: {
-        flexDirection: "row", 
-        justifyContent: "space-around", 
-        marginTop: 15,
-    },
-
-    viewButton: {
-        backgroundColor: "#3498DB", // Azul para "Ver Detalles"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120, // Ancho mínimo para los botones
-        alignItems: 'center',
-    },
-
-    editButton: {
-        backgroundColor: "#2ECC71", // Verde para "Editar"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120,
-        alignItems: 'center',
-    },
-
-    newMedicoButton: {
-        backgroundColor: "#E67E22", // Naranja para "Agendar Nueva Cita"
-        paddingVertical: 15,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        marginTop: 20,
-        marginBottom: 10, 
-    },
-
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        fontSize: 16,
     },
 });

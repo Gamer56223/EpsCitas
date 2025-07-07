@@ -9,15 +9,12 @@ export default function DetalleMedico({ route, navigation }) {
     const [medico, setMedico] = useState(null);
     const [loading, setLoading] = useState(true);
 
-   
-    const medicosEjemplo = [
-        { id: '1', Nombre: 'Angie', Apellido: 'Cardenas', Correo: 'cardenas@gmail.com', Telefono: '3108909090', TipoDocumento: 'CC', NumeroDocumento: '1052836128', Activo: 'TRUE'},
-        { id: '2', Nombre: 'Carlos', Apellido: 'Rodríguez', Correo: 'carlol@gmail.com', Telefono: '3213595990', TipoDocumento: 'CC', NumeroDocumento: '1052836122', Activo: 'TRUE'},
-        { id: '3', Nombre: 'Diane', Apellido: 'León', Correo: 'diane@gmail.com', Telefono: '3107890890', TipoDocumento: 'CC', NumeroDocumento: '1052836120', Activo: 'FALSE'},
-    ];
+  
+    
 
     useEffect(() => {
-        const foundMedico = medicosEjemplo.find(m => m.id === medicoId);
+        // Simular una carga de datos basada en el especialidadId
+        const foundMedico = medicosEjemplo.find(me => me.id === medicoId);
         setMedico(foundMedico);
         setLoading(false);
     }, [medicoId]);
@@ -26,17 +23,17 @@ export default function DetalleMedico({ route, navigation }) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f4f8' }]}>
                 <ActivityIndicator size="large" color="#007B8C" />
-                <Text style={{ marginTop: 15, fontSize: 18, color: '#555' }}>Cargando detalles del Médico...</Text>
+                <Text style={{ marginTop: 15, fontSize: 18, color: '#555' }}>Cargando detalles del Medico...</Text>
             </View>
         );
     }
 
-    if (!medico) {
+    if (!especialidad) {
         return (
             <SafeAreaView style={[styles.container, {backgroundColor: '#f0f4f8'}]}>
-                <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de Médico</Text>
+                <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle del Medico</Text>
                 <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
-                    <Text style={[styles.errorText, {color: 'red'}]}>No se encontraron detalles para este médico.</Text>
+                    <Text style={[styles.errorText, {color: 'red'}]}>No se encontraron detalles para este Medico.</Text>
                     <BotonComponent
                         title="Volver al Listado"
                         onPress={() => navigation.goBack()}
@@ -50,16 +47,22 @@ export default function DetalleMedico({ route, navigation }) {
 
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: '#f0f4f8'}]}>
-            <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de Médico</Text>
+            <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle del Medico</Text>
 
             <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
-                <Text style={[styles.medicoName, {color: '#2c3e50'}]}>{medico.Nombre} {medico.Apellido}</Text>
+                <Text style={[styles.medicoName, {color: '#2c3e50'}]}>{medico.Nombre}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{medico.id}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Apellido: </Text>{medico.Apellido}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Correo: </Text>{medico.Correo}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Teléfono: </Text>{medico.Telefono}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Tipo de Documento: </Text>{medico.TipoDocumento}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Número de Documento: </Text>{medico.NumeroDocumento}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Activo: </Text>{medico.Activo === 'TRUE' ? 'Sí' : 'No'}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Telefono: </Text>{medico.Telefono}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Tipo Documento: </Text>{medico.TipoDocumento}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Número Documento: </Text>{medico.NumeroDocumento}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Activo: </Text>{medico.Activo}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Id Especialidad: </Text>{medico.IdEspecialidad}</Text>
+
+                {medico.Area && (
+                    <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Área: </Text>{medico.Area}</Text>
+                )}
             </View>
 
             <BotonComponent
@@ -123,7 +126,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     backButton: {
-        backgroundColor: "#007B8C", 
+        backgroundColor: "#007B8C", // Color consistente con el tema
         paddingVertical: 12,
         paddingHorizontal: 25,
         borderRadius: 8,

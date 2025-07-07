@@ -1,136 +1,160 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons
+import BotonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
+import ConsultorioCard from "../../components/ConsultorioCard";
+import { useNavigation } from "@react-navigation/native";
+import { listarConsultorios, eliminarConsultorio } from "../../Src/Servicios/ConsultorioService";
+
+export default function ListarConsultorio (){
+    const [consultorios, setConsultorios] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigation = useNavigation();
+
+    const handleConsultorios = async () => {
+        setLoading(true);
+        try {
+            const result = await listarConsultorios();
+            if (result.success) {
+                setConsultorios(result.data);
+            } else {
+                Alert.alert ("Error", result.message || "No se pudierón cargas los consultorios");
+            }
+        } catch (error) {
+            Alert.alert ("Error", "No se pudierón cargas los consultorios");
+        } finally {
+            setLoading(false);
+        }
+
+    };
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', handleConsultorios);
+        return unsubscribe;
+    }, [navigation]);
+
+    const handleEliminar = (id) => {
+        Alert.alert(
+            "Eliminar Consultorio",
+            "¿Estás seguro de que deseas eliminar este consultorio?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+
+                    onPress: async () => {
+                        try {
+                            const result = await eliminarConsultorio(id);
+                            if (result.success) {
+                                // setEspecialidades (especialidades.filter((e) => e.id !== id));
+                                handleConsultorios();
+                            } else {
+                                Alert.alert("Error", result.message || "No se pudo eliminar el Consultorio");
+                            }
+                        } catch (error) {
+                            Alert.alert("Error", "No se pudo eliminar el consultorio");
+                        }
+                    },
+                }
+            ]
+        )
+    }
+
+    const handleCrear = () => {
+        navigation.navigate('CrearConsultorio');
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#1976D2" />
+            </View>
+        );
+    }
+
+    const handleEditar = (consultorio) => {
+        navigation.navigate("EditarConsultorio", {consultorio});
 
 
-export default function ListarConsultorio ({navigation}){
+    }
 
-    const consultoriosEjemplo = [
-        { id: '1', Nombre: 'Consultorio B2', Numero: '202'},
-        { id: '2', Nombre: 'Consultorio B3', Numero: '203'},
-        { id: '3', Nombre: 'Consultorio C1', Numero: '506'},
-    ];
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Listado de Consultorios</Text>
-            <ScrollView style={styles.consultorioContainer}>
-                {consultoriosEjemplo.map((consultorio) => (
-                    <View key={consultorio.id} style={styles.consultorioCard}>
-                        <Text style={styles.consultorioTitle}>{consultorio.Nombre}</Text>
-                        <Text style={styles.consultorioDetail}><Text style={styles.detailLabel}>Número: </Text>{consultorio.Numero}</Text>        
-                        <View style={styles.buttonContainer}>
-                            <BotonComponent
-                                title="Ver Detalles" // Título completo
-                                onPress={() => navigation.navigate("DetalleConsultorios", { consultorioId: consultorio.id })}
-                                buttonStyle={styles.viewButton}
-                                textStyle={styles.buttonText}
-                            />
-                            <BotonComponent
-                                title="Editar Consultorio" // Título completo
-                                onPress={() => navigation.navigate("EditarConsultorios", { consultorioId: consultorio.id })}
-                                buttonStyle={styles.editButton}
-                                textStyle={styles.buttonText}
-                            />
-                        </View>
-                    </View>
-                ))}
-            </ScrollView>
-            
-            <BotonComponent
-                title="Agendar Nuevo Consultorio" // Título completo
-                onPress={() => { /* navigation.navigate("CrearConsultorio") */ }}
-                buttonStyle={styles.newConsultorioButton} // Usar el estilo específico para Consultorio
-                textStyle={styles.buttonText}
+        <View style={{flex: 1}}>
+            <FlatList
+            data={consultorios}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+                <ConsultorioCard
+                consultorio= {item}
+                onEdit={() => handleEditar (item)}
+                onDelete={() => handleEliminar (item.id)}
             />
+            )}
+            ListEmptyComponent = {<Text style = {styles.emptyText}>No Hay Consultorios Registrados. </Text>}
+            />
+
+            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
+                <View style={styles.botonCrearContent}>
+                    <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.botonCrearIcon} />
+                    <Text style={styles.textoBotonCrear}>Nuevo Consultorio</Text>
+                </View>
+            </TouchableOpacity>
         </View>
-    );
+    )
 }
-    
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: "#F0F4F8", // Fondo suave
-        alignItems: "center", // Centra el contenido horizontalmente
+        backgroundColor: '#F8F8F8',
+        paddingHorizontal: 10,
+        paddingTop: 10,
     },
-
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        marginBottom: 25,
-        color: "#2C3E50", // Color de título oscuro
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F8F8F8',
     },
-
-    consultorioContainer: {
-        width: "100%", // Ocupa todo el ancho disponible
-        flex: 1, // Permite que el ScrollView ocupe el espacio restante
-    },
-
-    consultorioCard: {
-        backgroundColor: "skyblue", // Fondo blanco para cada tarjeta de consultorio
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 15, // Espacio entre tarjetas
-        shadowColor: "#000", // Sombra suave
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3, // Elevación para Android
-    },
-
-    consultorioTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 8,
-        color: "#34495E", // Color para el título del consultorio
-    },
-
-    consultorioDetail: {
+    emptyText: {
         fontSize: 16,
-        color: "#5C6F7F", 
-        marginBottom: 4,
+        color: '#7F8C8D',
+        textAlign: 'center',
+        marginTop: 50,
     },
-   
-    detailLabel: {
+    emptyListContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    botonCrear: { // Estilo para el TouchableOpacity
+        backgroundColor: '#1976D2', // Color de fondo
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        margin: 10,
+        // Sombra para un efecto más bonito
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.27,
+        shadowRadius: 4.65,
+        elevation: 6,
+    },
+    botonCrearContent: { // Contenedor interno para el icono y el texto
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    botonCrearIcon: { // Estilo para el icono
+        marginRight: 8, // Espacio entre el icono y el texto
+    },
+    textoBotonCrear: { // Estilo para el texto del botón
+        color: '#FFFFFF',
+        fontSize: 16,
         fontWeight: 'bold',
     },
-
-    buttonContainer: {
-        flexDirection: "row", 
-        justifyContent: "space-around", 
-        marginTop: 15,
-    },
-        
-    viewButton: {
-        backgroundColor: "#3498DB", 
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120, // Ancho mínimo para los botones
-        alignItems: 'center',
-    },
-
-    editButton: {
-        backgroundColor: "#2ECC71", // Verde para "Editar"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120,
-        alignItems: 'center',
-    },
-
-    newConsultorioButton: { 
-        backgroundColor: "#E67E22", // Naranja para "Agendar Nuevo Consultorio"
-        paddingVertical: 15,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        marginTop: 20, // Espacio superior
-        marginBottom: 10, 
-    },
-
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        fontSize: 16,
-    },
-    
 });

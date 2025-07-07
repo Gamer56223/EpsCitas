@@ -3,6 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import ListarCita from "../../../Screen/Citas/ListarCita";
 import DetalleCita from "../../../Screen/Citas/DetalleCita";
 import EditarCita from "../../../Screen/Citas/EditarCita";
+import AgregarCita from "../../../Screen/Citas/AgregarCita";
 
 const Stack = createStackNavigator();
 
@@ -24,6 +25,12 @@ export default function CitasStack () {
                 component={EditarCita}
                 options={{ title: "Nuevo/Editar Citas" }}
             />
+            <Stack.Screen
+                name= "CrearCita" // Nuevo nombre de ruta para la pantalla de creación
+                component={AgregarCita} // Asigna el nuevo componente
+                options={{ title: "Nueva Cita" }}
+            />
+            
         </Stack.Navigator>
     );
 }

@@ -1,148 +1,160 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons
+import BotonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
+import PacienteCard from '../../components/PacienteCard';
+import { useNavigation } from "@react-navigation/native";
+import { listarPacientes, eliminarPaciente } from "../../Src/Servicios/PacienteService";
 
-import BotonComponent from "../../components/BottonComponent";
+export default function ListarPaciente (){
+    const [pacientes, setPacientes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigation = useNavigation();
 
-// import { View, Text, Button, StyleSheet, ScrollView } from "react-native";
+    const handlePacientes = async () => {
+        setLoading(true);
+        try {
+            const result = await listarPacientes();
+            if (result.success) {
+                setPacientes(result.data);
+            } else {
+                Alert.alert ("Error", result.message || "No se pudierón cargas los pacientes");
+            }
+        } catch (error) {
+            Alert.alert ("Error", "No se pudierón cargas los pacientes");
+        } finally {
+            setLoading(false);
+        }
+
+    };
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', handlePacientes);
+        return unsubscribe;
+    }, [navigation]);
+
+    const handleEliminar = (id) => {
+        Alert.alert(
+            "Eliminar ",
+            "¿Estás seguro de que deseas eliminar este paciente?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+
+                    onPress: async () => {
+                        try {
+                            const result = await eliminarPaciente(id);
+                            if (result.success) {
+                                // setEspecialidades (especialidades.filter((e) => e.id !== id));
+                                handlePacientes();
+                            } else {
+                                Alert.alert("Error", result.message || "No se pudo eliminar el Paciente");
+                            }
+                        } catch (error) {
+                            Alert.alert("Error", "No se pudo eliminar el paciente");
+                        }
+                    },
+                }
+            ]
+        )
+    }
+
+    const handleCrear = () => {
+        navigation.navigate('CrearPaciente');
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#1976D2" />
+            </View>
+        );
+    }
+
+    const handleEditar = (paciente) => {
+        navigation.navigate("EditarPaciente", {paciente});
 
 
-export default function ListarPaciente ({navigation}){
-
-    const PacientesEjemplo = [
-        { id: '1', Nombre: 'Angie', Apellido: 'Cardenas', Correo: 'cardenas@gmail', Telefono: '3108909090', TipoDocumento: 'CC', NumeroDocumento: '1052836128', FechaNacimiento: '04/05/2007', Genero: 'Masculino'},
-        { id: '2', Nombre: 'Carlos', Apellido: 'Rodríguez', Correo: 'carlol@gmail', Telefono: '3213595990', TipoDocumento: 'CC', NumeroDocumento: '1052836122', FechaNacimiento: '04/12/2003', Genero: 'Masculino'},
-        { id: '3', Nombre: 'Diane', Apellido: 'León', Correo: 'diane@gmail', Telefono: '3107890890', TipoDocumento: 'CC', NumeroDocumento: '1052836120', FechaNacimiento: '17/06/1988', Genero: 'Femenino'},
-    ];
+    }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Listado de Pacientes</Text>
-
-            <ScrollView style={styles.pacienteScrollView}>
-                {PacientesEjemplo.map((paciente) => (
-                    <View key={paciente.id} style={styles.pacienteCard}>
-                        <Text style={styles.pacienteTitle}>{paciente.Nombre} {paciente.Apellido}</Text>
-                        <Text style={styles.pacienteDetail}><Text style={styles.detailLabel}>Correo: </Text>{paciente.Correo}</Text>
-                        <Text style={styles.pacienteDetail}><Text style={styles.detailLabel}>Telefono: </Text>{paciente.Telefono}</Text>
-                        <Text style={styles.pacienteDetail}><Text style={styles.detailLabel}>TipoDocumento: </Text>{paciente.TipoDocumento}</Text>
-                        <Text style={styles.pacienteDetail}><Text style={styles.detailLabel}>NumeroDocumento: </Text>{paciente.NumeroDocumento}</Text>
-                        <Text style={styles.pacienteDetail}><Text style={styles.detailLabel}>FechaNacimiento: </Text>{paciente.FechaNacimiento}</Text>
-                        <Text style={styles.pacienteDetail}><Text style={styles.detailLabel}>Genero: </Text>{paciente.Genero}</Text>
-
-
-                        <View style={styles.buttonContainer}>
-                            <BotonComponent
-                                title="Ver Detalles"
-                                onPress={() => navigation.navigate("DetallePaciente", { pacienteId: paciente.id })}
-                                buttonStyle={styles.viewButton}
-                                textStyle={styles.buttonText}
-                            />
-                            <BotonComponent
-                                title="Editar"
-                                onPress={() => navigation.navigate("EditarPaciente", { pacienteId: paciente.id })}
-                                buttonStyle={styles.editButton}
-                                textStyle={styles.buttonText}
-                            />
-                        </View>
-                    </View>
-                ))}
-            </ScrollView>
-
-            <BotonComponent
-                title="Agregar Nuevo Paciente"
-                onPress={() => { /* navigation.navigate("Crearpaciente") */ }}
-                buttonStyle={styles.newPacienteButton} // Nombre de estilo corregido aquí
-                textStyle={styles.buttonText}
+        <View style={{flex: 1}}>
+            <FlatList
+            data={pacientes}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+                <EspecialidadCard
+                paciente = {item}
+                onEdit={() => handleEditar (item)}
+                onDelete={() => handleEliminar (item.id)}
             />
+            )}
+            ListEmptyComponent = {<Text style = {styles.emptyText}>No Hay Pacientes Registrados. </Text>}
+            />
+
+            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
+                <View style={styles.botonCrearContent}>
+                    <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.botonCrearIcon} />
+                    <Text style={styles.textoBotonCrear}>Nuevo Paciente</Text>
+                </View>
+            </TouchableOpacity>
         </View>
-    );
+    )
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: "#F0F4F8", // Fondo suave
-        alignItems: "center", // Centra el contenido horizontalmente
+        backgroundColor: '#F8F8F8',
+        paddingHorizontal: 10,
+        paddingTop: 10,
     },
-
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        marginBottom: 25,
-        color: "#2C3E50", // Color de título oscuro
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F8F8F8',
     },
-
-    pacienteScrollView: {
-        width: "100%", // Ocupa todo el ancho disponible
-        flex: 1, 
+    emptyText: {
+        fontSize: 16,
+        color: '#7F8C8D',
+        textAlign: 'center',
+        marginTop: 50,
     },
-
-    pacienteCard: {
-        backgroundColor: "skyblue", 
-        borderRadius: 10,
+    emptyListContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    botonCrear: { // Estilo para el TouchableOpacity
+        backgroundColor: '#1976D2', // Color de fondo
         padding: 15,
-        marginBottom: 15, // Espacio entre tarjetas
-        shadowColor: "#000", // Sombra suave
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3, // Elevación para Android
-   
+        borderRadius: 8,
+        alignItems: 'center',
+        margin: 10,
+        // Sombra para un efecto más bonito
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.27,
+        shadowRadius: 4.65,
+        elevation: 6,
     },
-
-    pacienteTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 8,
-        color: "#34495E", // Color para el título del paciente
+    botonCrearContent: { // Contenedor interno para el icono y el texto
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-
-    pacienteDetail: {
+    botonCrearIcon: { // Estilo para el icono
+        marginRight: 8, // Espacio entre el icono y el texto
+    },
+    textoBotonCrear: { // Estilo para el texto del botón
+        color: '#FFFFFF',
         fontSize: 16,
-        color: "#5C6F7F", // Color para los detalles del paciente
-        marginBottom: 4,
-    },
-    // Nuevo estilo para aplicar negrita solo al nombre del campo
-    detailLabel: {
         fontWeight: 'bold',
-    },
-
-    buttonContainer: {
-        flexDirection: "row", // Botones en la misma fila
-        justifyContent: "space-around", // Distribuye los botones equitativamente
-        marginTop: 15,
-    },
-
-    viewButton: {
-        backgroundColor: "#3498DB", // Azul para "Ver Detalles"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120, // Ancho mínimo para los botones
-        alignItems: 'center',
-    },
-
-    editButton: {
-        backgroundColor: "#2ECC71", // Verde para "Editar"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120,
-        alignItems: 'center',
-    },
-
-    newPacienteButton: { // Nombre de estilo corregido aquí
-        backgroundColor: "#E67E22", // Naranja para "Agregar Nuevo Paciente"
-        paddingVertical: 15,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        marginTop: 20, // Espacio superior
-        marginBottom: 10, // Espacio inferior si hay más contenido abajo
-    },
-
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        fontSize: 16,
     },
 });

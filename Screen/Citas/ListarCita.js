@@ -1,134 +1,158 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import BotonComponent from "../../components/BottonComponent";
+import CitaCard from '../../components/CitaCard';
+import { useNavigation } from "@react-navigation/native";
+import { listarCitas, eliminarCita } from "../../Src/Servicios/CitaService";
+
+export default function ListarCita (){
+    const [citas, setCitas] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigation = useNavigation();
+
+    const handleCitas = async () => {
+        setLoading(true);
+        try {
+            const result = await listarCitas();
+            if (result.success) {
+                setCitas(result.data);
+            } else {
+                Alert.alert ("Error", result.message || "No se pudierón cargas las citas");
+            }
+        } catch (error) {
+            Alert.alert ("Error", "No se pudierón cargas las citas");
+        } finally {
+            setLoading(false);
+        }
+
+    };
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', handleCitas);
+        return unsubscribe;
+    }, [navigation]);
+
+    const handleEliminar = (id) => {
+        Alert.alert(
+            "Eliminar Cita",
+            "¿Estás seguro de que deseas eliminar esta cita?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+
+                    onPress: async () => {
+                        try {
+                            const result = await eliminarCita(id);
+                            if (result.success) {
+                                handleCitas();
+                            } else {
+                                Alert.alert("Error", result.message || "No se pudo eliminar la Cita");
+                            }
+                        } catch (error) {
+                            Alert.alert("Error", "No se pudo eliminar la cita");
+                        }
+                    },
+                }
+            ]
+        )
+    }
+
+    const handleCrear = () => {
+        navigation.navigate('CrearCita');
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#1976D2" />
+            </View>
+        );
+    }
+
+    const handleEditar = (cita) => {
+        navigation.navigate("EditarCitas", {cita}); // <-- ¡Cambio aquí! De "EditarCita" a "EditarCitas"
 
 
-export default function ListarCita({ navigation }) {
-
-    const citasEjemplo = [
-        { id: '1', Nombre: 'Consulta General', Fecha: '2025-07-01', Estado: 'Activo', Hora: '10:00 AM', Tipo: 'Consulta' },
-        { id: '2', Nombre: 'Revisión Dental', Fecha: '2025-07-05', Estado: 'Activo', Hora: '03:30 PM', Tipo: 'Revisión' },
-        { id: '3', Nombre: 'Terapia Física', Fecha: '2025-07-10', Estado: 'Inactivo', Hora: '09:00 AM', Tipo: 'urgencia' },
-    ];
+    }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Listado de Citas</Text> {/* El título ya estaba completo, se mantiene */}
-
-            <ScrollView style={styles.citasContainer}>
-                {citasEjemplo.map((cita) => (
-                    <View key={cita.id} style={styles.citaCard}>
-                        <Text style={styles.citaTitle}>{cita.Nombre}</Text>
-                        {/* Se aplican estilos de negrita solo a los nombres de los campos */}
-                        <Text style={styles.citaDetail}><Text style={styles.detailLabel}>Fecha: </Text>{cita.Fecha}</Text>
-                        <Text style={styles.citaDetail}><Text style={styles.detailLabel}>Estado: </Text>{cita.Estado}</Text>
-                        <Text style={styles.citaDetail}><Text style={styles.detailLabel}>Hora: </Text>{cita.Hora}</Text>
-                        <Text style={styles.citaDetail}><Text style={styles.detailLabel}>Tipo: </Text>{cita.Tipo}</Text>
-
-                        <View style={styles.buttonContainer}>
-                            <BotonComponent
-                                title="Ver Detalles" // Título completo
-                                onPress={() => navigation.navigate("DetalleCitas", { citaId: cita.id })}
-                                buttonStyle={styles.viewButton}
-                                textStyle={styles.buttonText}
-                            />
-                            <BotonComponent
-                                title="Editar Cita" // Título completo
-                                onPress={() => navigation.navigate("EditarCitas", { citaId: cita.id })}
-                                buttonStyle={styles.editButton}
-                                textStyle={styles.buttonText}
-                            />
-                        </View>
-                    </View>
-                ))}
-            </ScrollView>
-
-            <BotonComponent
-                title="Agendar Nueva Cita" // Título completo
-                onPress={() => { /* navigation.navigate("CrearCita") */ }}
-                buttonStyle={styles.newCitaButton}
-                textStyle={styles.buttonText}
+        <View style={{flex: 1}}>
+            <FlatList
+            data={citas}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+                <CitaCard
+                cita= {item}
+                onEdit={() => handleEditar (item)}
+                onDelete={() => handleEliminar (item.id)}
+                />
+            )}
+            ListEmptyComponent = {<Text style = {styles.emptyText}>No Hay Citas Registradas. </Text>}
             />
+
+            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
+                <View style={styles.botonCrearContent}>
+                    <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.botonCrearIcon} />
+                    <Text style={styles.textoBotonCrear}>Nueva Cita</Text>
+                </View>
+            </TouchableOpacity>
         </View>
-    );
+    )
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: "#F0F4F8", // Fondo suave
-        alignItems: "center", // Centra el contenido horizontalmente
+        backgroundColor: '#F8F8F8',
+        paddingHorizontal: 10,
+        paddingTop: 10,
     },
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        marginBottom: 25,
-        color: "#2C3E50", // Color de título oscuro
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F8F8F8',
     },
-    citasContainer: {
-        width: "100%", 
-        flex: 1, 
+    emptyText: {
+        fontSize: 16,
+        color: '#7F8C8D',
+        textAlign: 'center',
+        marginTop: 50,
     },
-    citaCard: {
-        backgroundColor: "skyblue", // Fondo blanco para cada tarjeta de cita
-        borderRadius: 10,
+    emptyListContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    botonCrear: {
+        backgroundColor: '#1976D2',
         padding: 15,
-        marginBottom: 15, // Espacio entre tarjetas
-        shadowColor: "#000", // Sombra suave
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3, // Elevación para Android
+        borderRadius: 8,
+        alignItems: 'center',
+        margin: 10,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.27,
+        shadowRadius: 4.65,
+        elevation: 6,
     },
-    citaTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 8,
-        color: "#34495E", 
+    botonCrearContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    
-    citaDetail: {
+    botonCrearIcon: {
+        marginRight: 8,
+    },
+    textoBotonCrear: {
+        color: '#FFFFFF',
         fontSize: 16,
-        color: "#5C6F7F", 
-        marginBottom: 4,
-    },
-    
-    detailLabel: {
         fontWeight: 'bold',
-    },
-    buttonContainer: {
-        flexDirection: "row", 
-        justifyContent: "space-around",
-        marginTop: 15,
-    },
-    // Estilos para BotonComponent
-    viewButton: {
-        backgroundColor: "#3498DB", // Azul para "Ver Detalles"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120, 
-        alignItems: 'center',
-    },
-    editButton: {
-        backgroundColor: "#2ECC71", // Verde para "Editar"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120,
-        alignItems: 'center',
-    },
-    newCitaButton: {
-        backgroundColor: "#E67E22", // Naranja para "Agendar Nueva Cita"
-        paddingVertical: 15,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        marginTop: 20, 
-        marginBottom: 10, 
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        fontSize: 16,
     },
 });

@@ -1,7 +1,8 @@
 import { View, Text, TextInput, StyleSheet, Alert } from "react-native";
 import BottonComponent from "../../components/BottonComponent";
 import { useState, } from "react";
-import { loginUser} from "../../Src/Servicios/AuthService";
+import { loginUser } from "../../Src/Servicios/AuthService";
+
 
 
 export default function LoginScreen({ navigation }) {

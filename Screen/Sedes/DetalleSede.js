@@ -3,19 +3,18 @@ import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView } from "react-n
 import BotonComponent from "../../components/BottonComponent"; 
 
 export default function DetalleSede({ route, navigation }) {
+   
     const { sedeId } = route.params;
 
     const [sede, setSede] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const sedesEjemplo = [
-        { id: '1', Nombre: 'Sede Santa Fe', Direccion: 'Calle 57 - El Campin', Telefono: '3108909090'},
-        { id: '2', Nombre: 'Sede Soacha', Direccion: 'Calle 22', Telefono: '7603102'},
-        { id: '3', Nombre: 'Sede Bosa', Direccion: 'Calle 11', Telefono: '7603100'},
-    ];
+  
+    
 
     useEffect(() => {
-        const foundSede = sedesEjemplo.find(s => s.id === sedeId);
+        // Simular una carga de datos basada en el especialidadId
+        const foundSede = sedesEjemplo.find(e => e.id === sedeId);
         setSede(foundSede);
         setLoading(false);
     }, [sedeId]);
@@ -32,7 +31,7 @@ export default function DetalleSede({ route, navigation }) {
     if (!sede) {
         return (
             <SafeAreaView style={[styles.container, {backgroundColor: '#f0f4f8'}]}>
-                <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de Sede</Text>
+                <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de la Sede</Text>
                 <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
                     <Text style={[styles.errorText, {color: 'red'}]}>No se encontraron detalles para esta sede.</Text>
                     <BotonComponent
@@ -48,13 +47,17 @@ export default function DetalleSede({ route, navigation }) {
 
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: '#f0f4f8'}]}>
-            <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de Sede</Text>
+            <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de la Sede</Text>
 
             <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
-                <Text style={[styles.sedeName, {color: '#2c3e50'}]}>{sede.Nombre}</Text>
+                <Text style={[styles.especialidadName, {color: '#2c3e50'}]}>{sede.Nombre}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{sede.id}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Dirección: </Text>{sede.Direccion}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Teléfono: </Text>{sede.Telefono}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Dirección: </Text>{sede.Descripcion}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Telefono: </Text>{sede.Descripcion}</Text>
+
+                {sede.Area && (
+                    <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Área: </Text>{sede.Area}</Text>
+                )}
             </View>
 
             <BotonComponent

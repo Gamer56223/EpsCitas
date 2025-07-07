@@ -1,282 +1,214 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput, SafeAreaView, ActivityIndicator, Alert } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import React, { useState, useEffect, act } from "react";
+import { View, Text, TextInput, StyleSheet, Button, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { useRoute } from '@react-navigation/native';
+import BotonComponent from "../../components/BottonComponent";
 
-export default function EditarMedico({ route, navigation }) {
+import { crearMedico, editarMedico } from "../../Src/Servicios/MedicoService";
 
-    const { medicoId } = route.params || {};
+export default function EditarMedico({ navigation }) {
+    const route = useRoute();
 
-    const [medico, setMedico] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const medico = route.params?.medico;
 
-   
-    const [nombre, setNombre] = useState('');
-    const [apellido, setApellido] = useState('');
-    const [correo, setCorreo] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [tipoDocumento, setTipoDocumento] = useState('');
-    const [numeroDocumento, setNumeroDocumento] = useState('');
-    const [activo, setActivo] = useState(''); 
+    const [nombre, setNombre] = useState(medico?.Nombre || "");
+    const [apellido, setApellido] = useState(medico?.Apellido || "");
+    const [correo, setCorreo] = useState(medico?.Correo || "");
+    const [telefono, setTelefono] = useState(medico?.Telefono || "");
+    const [tipodocumento, setTipoDocumento] = useState(medico?.TipoDocumento || "");
+    const [numerodocumento, setNumeroDocumento] = useState(medico?.NumeroDocumento || "");
+    const [activo, setActivo] = useState(medico?.Activo || "");
+    const [idEspecialidad, setIdEspecialidad] = useState(medico?.idEspecialidad || "");
 
-   
-    const medicosEjemplo = [
-        { id: '1', Nombre: 'Angie', Apellido: 'Cardenas', Correo: 'cardenas@gmail.com', Telefono: '3108909090', TipoDocumento: 'CC', NumeroDocumento: '1052836128', Activo: 'TRUE'},
-        { id: '2', Nombre: 'Carlos', Apellido: 'Rodríguez', Correo: 'carlol@gmail.com', Telefono: '3213595990', TipoDocumento: 'CC', NumeroDocumento: '1052836122', Activo: 'TRUE'},
-        { id: '3', Nombre: 'Diane', Apellido: 'León', Correo: 'diane@gmail.com', Telefono: '3107890890', TipoDocumento: 'CC', NumeroDocumento: '1052836120', Activo: 'FALSE'},
-    ];
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (medicoId) {
-            
-            const foundMedico = medicosEjemplo.find(m => m.id === medicoId);
-            if (foundMedico) {
-                setMedico(foundMedico);
-                setNombre(foundMedico.Nombre);
-                setApellido(foundMedico.Apellido);
-                setCorreo(foundMedico.Correo);
-                setTelefono(foundMedico.Telefono);
-                setTipoDocumento(foundMedico.TipoDocumento);
-                setNumeroDocumento(foundMedico.NumeroDocumento);
-                setActivo(foundMedico.Activo);
-            } else {
-                Alert.alert("Error", "Médico no encontrado.");
-                navigation.goBack(); // Volver si el médico no existe
-            }
-        } else {
-            // Si no hay medicoId, estamos creando un nuevo médico, los campos se quedan vacíos
+    const esEdicion = !!medico;
+
+    const handleGuardar = async () => {
+        if (!nombre || !apellido || !correo || !telefono || !tipodocumento || !numerodocumento || !activo || !idEspecialidad) {
+            Alert.alert("Campos requeridos", "Por favor, ingrese todos los campos");
+            return;
         }
-        setLoading(false);
-    }, [medicoId]);
 
-    const handleSave = () => {
-        
-        const medicoData = {
-            id: medicoId || new Date().getTime().toString(), // Generar ID si es nuevo
-            Nombre: nombre,
-            Apellido: apellido,
-            Correo: correo,
-            Telefono: telefono,
-            TipoDocumento: tipoDocumento,
-            NumeroDocumento: numeroDocumento,
-            Activo: activo, // Podrías convertir esto a booleano si tu backend lo espera
-        };
-        console.log("Datos a guardar:", medicoData);
-        Alert.alert("Guardar", "Funcionalidad de guardar pendiente. Datos en consola.");
-        // llamar a tu API para guardar
-        // Por ejemplo: api.post('/medicos', medicoData) o api.put(`/medicos/${medicoId}`, medicoData)
-        navigation.goBack(); // Volver a la pantalla anterior después de guardar
+        setLoading(true);
+        let result;
+        try {
+            if (esEdicion) {
+                result = await editarMedico(medico.id, {
+                    Nombre: nombre,
+                    Apellido: apellido,
+                    Correo: correo,
+                    Telefono: telefono,
+                    TipoDocumento: tipodocumento,
+                    NumeroDocumento: numerodocumento,
+                    Activo: activo,
+                    idEspecialidad: idEspecialidad     
+                });
+            } else {
+                result = await crearMedico({
+                    Nombre: nombre,
+                    Apellido: apellido,
+                    Correo: correo,
+                    Telefono: telefono,
+                    TipoDocumento: tipodocumento,
+                    NumeroDocumento: numerodocumento,
+                    Activo: activo,
+                    idEspecialidad: idEspecialidad
+                });
+            }
+
+            if (result.success) {
+                Alert.alert("Éxito", esEdicion ? "Medico actualizado correctamente" : "Medico creado correctamente");
+                navigation.goBack();
+            } else {
+                Alert.alert("Error", result.message || "No se pudo guardar el medico");
+            }
+        } catch (error) {
+            console.error("Error al guardar medico:", error);
+            Alert.alert("Error", error.message || "Ocurrió un error inesperado al guardar la medico.");
+        } finally {
+            setLoading(false);
+        }
     };
-
-    const handleCancel = () => {
-        navigation.goBack(); // Volver sin guardar cambios
-    };
-
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007B8C" />
-                <Text style={styles.loadingText}>Cargando datos del Médico...</Text>
-            </View>
-        );
-    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>{medicoId ? "Editar Médico" : "Registrar Nuevo Médico"}</Text>
+        <View style={styles.container}>
+            <Text style={styles.title}>{esEdicion ? "Editar Medico" : "Nuevo Medico"}</Text>
 
-            <ScrollView style={styles.formScrollView}>
-                <View style={styles.formCard}>
-                    <Text style={styles.label}>Nombre:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={nombre}
-                        onChangeText={setNombre}
-                        placeholder="Ej. Juan"
-                        placeholderTextColor="#999"
-                    />
+            <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={nombre}
+                onChangeText={setNombre}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Apellido"
+                value={apellido}
+                onChangeText={setApellido}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Correo"
+                value={correo}
+                onChangeText={setCorreo}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Telefono"
+                value={telefono}
+                onChangeText={setTelefono}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Tipo Documento"
+                value={tipodocumento}
+                onChangeText={setTipoDocumento}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Número Documento"
+                value={numerodocumento}
+                onChangeText={setNumeroDocumento}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Activo"
+                value={activo}
+                onChangeText={setActivo}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Id Especialidad"
+                value={idEspecialidad}
+                onChangeText={setIdEspecialidad}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
 
-                    <Text style={styles.label}>Apellido:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={apellido}
-                        onChangeText={setApellido}
-                        placeholder="Ej. Pérez"
-                        placeholderTextColor="#999"
-                    />
+            <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading}>
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.textoBoton} >{esEdicion ? "Guardar cambios" : "Crear medico"}</Text>
+                )}
+            </TouchableOpacity>
 
-                    <Text style={styles.label}>Correo:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={correo}
-                        onChangeText={setCorreo}
-                        placeholder="Ej. juan.perez@example.com"
-                        placeholderTextColor="#999"
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-
-                    <Text style={styles.label}>Teléfono:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={telefono}
-                        onChangeText={setTelefono}
-                        placeholder="Ej. 3001234567"
-                        placeholderTextColor="#999"
-                        keyboardType="phone-pad"
-                    />
-
-                    <Text style={styles.label}>Tipo de Documento:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={tipoDocumento}
-                        onChangeText={setTipoDocumento}
-                        placeholder="Ej. CC, TI"
-                        placeholderTextColor="#999"
-                    />
-
-                    <Text style={styles.label}>Número de Documento:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={numeroDocumento}
-                        onChangeText={setNumeroDocumento}
-                        placeholder="Ej. 1234567890"
-                        placeholderTextColor="#999"
-                        keyboardType="numeric"
-                    />
-
-                    <Text style={styles.label}>Activo (TRUE/FALSE):</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={activo}
-                        onChangeText={setActivo}
-                        placeholder="Ej. TRUE / FALSE"
-                        placeholderTextColor="#999"
-                        autoCapitalize="characters" // Para facilitar el ingreso de TRUE/FALSE
-                    />
-                   
-
-                    <View style={styles.buttonContainer}>
-                        <BotonComponent
-                            title="Guardar Cambios"
-                            onPress={handleSave}
-                            buttonStyle={styles.saveButton}
-                            textStyle={styles.buttonText}
-                        />
-                        <BotonComponent
-                            title="Cancelar"
-                            onPress={handleCancel}
-                            buttonStyle={styles.cancelButton}
-                            textStyle={styles.buttonText}
-                        />
-                    </View>
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#E0F2F7", // Fondo suave, consistente
+        justifyContent: "center",
         alignItems: "center",
-        paddingTop: 20, // Ajuste para SafeAreaView
+        padding: 16,
+        backgroundColor: "#f5f5f5",
     },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f0f4f8',
-    },
-    loadingText: {
-        marginTop: 15,
-        fontSize: 18,
-        color: '#555',
-    },
+
     title: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: "bold",
-        marginBottom: 25,
-        color: "#2C3E50",
-        textAlign: 'center',
+        marginBottom: 24,
+        textAlign: "center",
     },
-    formScrollView: {
-        width: "100%",
-        paddingHorizontal: 20,
-    },
-    formCard: {
-        backgroundColor: "#FFFFFF",
-        borderRadius: 15,
-        padding: 20,
-        marginBottom: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 8,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: "#34495E",
-        marginBottom: 8,
-        marginTop: 10,
-    },
+
     input: {
-        height: 48,
-        borderColor: "#BDC3C7", // Borde suave
+        height: 50,
+        borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
-        paddingHorizontal: 12,
-        fontSize: 16,
-        color: "#34495E",
-        backgroundColor: "#F9F9F9", // Fondo claro para inputs
-        marginBottom: 15,
+        paddingHorizontal: 16,
+        marginBottom: 16,
+        width: "80%",
     },
-    inputTextArea: { // En caso de que necesites un área de texto más grande
-        borderColor: "#BDC3C7",
+    inputTextArea: {
+        height: 120,
+        borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
         paddingVertical: 10,
-        fontSize: 16,
-        color: "#34495E",
-        backgroundColor: "#F9F9F9",
-        marginBottom: 15,
-        minHeight: 100,
+        marginBottom: 16,
+        width: "80%",
         textAlignVertical: 'top',
     },
-    switchContainer: { // Estilo para el contenedor del Switch si se usa
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 15,
-        paddingVertical: 5,
-    },
-    buttonContainer: {
-        flexDirection: "row",
-        justifyContent: "space-around",
+
+    boton: {
+        backgroundColor: "#1976D2",
+        padding: 15,
+        borderRadius: 8,
+        alignItems: "center",
+        width: "80%",
         marginTop: 20,
     },
-    saveButton: {
-        backgroundColor: "#28A745", // Verde para guardar
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        minWidth: 140,
-        alignItems: 'center',
-    },
-    cancelButton: {
-        backgroundColor: "#6C757D", // Gris para cancelar
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        minWidth: 140,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
+    textoBoton: {
+        color: "#fff",
         fontSize: 16,
+        fontWeight: "bold",
+    },
+    error: {
+        color: "red",
+        marginTop: 10,
+        textAlign: "center",
     },
 });

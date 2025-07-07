@@ -1,254 +1,185 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput, SafeAreaView, ActivityIndicator, Alert } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, TextInput, StyleSheet, Button, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { useRoute } from '@react-navigation/native';
+import BotonComponent from "../../components/BottonComponent";
 
-export default function EditarCita({ route, navigation }) {
+import { crearCita, editarCita } from "../../Src/Servicios/CitaService";
 
-    const { citaId } = route.params || {};
+export default function EditarCita({ navigation }) {
+    const route = useRoute();
 
-    const [cita, setCita] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const cita = route.params?.cita;
 
-  
-    const [nombre, setNombre] = useState('');
-    const [fecha, setFecha] = useState('');
-    const [estado, setEstado] = useState('');
-    const [hora, setHora] = useState('');
-    const [tipo, setTipo] = useState('');
-    const [observaciones, setObservaciones] = useState('');
-    const citasEjemplo = [
-        { id: '1', Nombre: 'Consulta General', Fecha: '2025-07-01', Estado: 'Activo', Hora: '10:00 AM', Tipo: 'Consulta', Observaciones: 'Paciente con síntomas leves de resfriado.' },
-        { id: '2', Nombre: 'Revisión Dental', Fecha: '2025-07-05', Estado: 'Activo', Hora: '03:30 PM', Tipo: 'Revisión', Observaciones: 'Revisión anual y limpieza.' },
-        { id: '3', Nombre: 'Terapia Física', Fecha: '2025-07-10', Estado: 'Inactivo', Hora: '09:00 AM', Tipo: 'urgencia', Observaciones: 'Sesión para rehabilitación de rodilla.' },
-    ];
+    const [nombre, setNombre] = useState(cita?.Nombre || "");
+    const [fecha, setFecha] = useState(cita?.Fecha || "");
+    const [estado, setEstado] = useState(cita?.Estado || "");
+    const [hora, setHora] = useState(cita?.Hora || "");
+    const [tipo, setTipo] = useState(cita?.Tipo || "");
 
-    useEffect(() => {
-        if (citaId) {
-            const foundCita = citasEjemplo.find(c => c.id === citaId);
-            if (foundCita) {
-                setCita(foundCita);
-                setNombre(foundCita.Nombre);
-                setFecha(foundCita.Fecha);
-                setEstado(foundCita.Estado);
-                setHora(foundCita.Hora);
-                setTipo(foundCita.Tipo);
-                setObservaciones(foundCita.Observaciones || '');
-            } else {
-                Alert.alert("Error", "Cita no encontrada.");
-                navigation.goBack(); // Volver si la cita no existe
-            }
-        } else {
+
+
+    const [loading, setLoading] = useState(false);
+
+    const esEdicion = !!cita;
+
+    const handleGuardar = async () => {
+        if (!nombre || !fecha || !estado || !hora || !tipo) {
+            Alert.alert("Campos requeridos", "Por favor, ingrese todos los campos");
+            return;
         }
-        setLoading(false);
-    }, [citaId]);
 
-    const handleSave = () => {
-        const citaData = {
-            id: citaId || new Date().getTime().toString(), // Generar ID si es nueva
-            Nombre: nombre,
-            Fecha: fecha,
-            Estado: estado,
-            Hora: hora,
-            Tipo: tipo,
-            Observaciones: observaciones,
-        };
-        console.log("Datos a guardar:", citaData);
-        Alert.alert("Guardar", "Funcionalidad de guardar pendiente. Datos en consola.");
-        navigation.goBack(); 
+        setLoading(true);
+        let result;
+        try {
+            if (esEdicion) {
+                result = await editarCita(cita.id, {
+                    Nombre: nombre,
+                    Fecha: fecha,
+                    Estado: estado,
+                    Hora: hora,
+                    Tipo: tipo
+                });
+            } else {
+                result = await crearCita({
+                    Nombre: nombre,
+                    Fecha: fecha,
+                    Estado: estado,
+                    Hora: hora,
+                    Tipo: tipo
+                    
+                });
+            }
+
+            if (result.success) {
+                Alert.alert("Éxito", esEdicion ? "Cita actualizada correctamente" : "Cita creada correctamente");
+                navigation.goBack();
+            } else {
+                Alert.alert("Error", result.message || "No se pudo guardar la cita");
+            }
+        } catch (error) {
+            console.error("Error al guardar cita:", error);
+            Alert.alert("Error", error.message || "Ocurrió un error inesperado al guardar la cita.");
+        } finally {
+            setLoading(false);
+        }
     };
-
-    const handleCancel = () => {
-        navigation.goBack(); 
-    };
-
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007B8C" />
-                <Text style={styles.loadingText}>Cargando datos de la cita...</Text>
-            </View>
-        );
-    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>{citaId ? "Editar Cita" : "Crear Nueva Cita"}</Text>
+        <View style={styles.container}>
+            <Text style={styles.title}>{esEdicion ? "Editar Cita" : "Nueva Cita"}</Text>
 
-            <ScrollView style={styles.formScrollView}>
-                <View style={styles.formCard}>
-                    <Text style={styles.label}>Nombre de la Cita:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={nombre}
-                        onChangeText={setNombre}
-                        placeholder="Ej. Consulta General"
-                        placeholderTextColor="#999"
-                    />
+            <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={nombre}
+                onChangeText={setNombre}
+            />
 
-                    <Text style={styles.label}>Fecha:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={fecha}
-                        onChangeText={setFecha}
-                        placeholder="Ej. 2025-07-01"
-                        placeholderTextColor="#999"
-                        keyboardType="default" // Podrías usar 'datetime' o una librería de selección de fecha
-                    />
+            <TextInput
+                style={styles.input}
+                placeholder="Fecha"
+                value={fecha}
+                onChangeText={setFecha}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
 
-                    <Text style={styles.label}>Estado:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={estado}
-                        onChangeText={setEstado}
-                        placeholder="Ej. Activo / Inactivo"
-                        placeholderTextColor="#999"
-                    />
+            <TextInput
+                style={styles.input}
+                placeholder="Estado"
+                value={estado}
+                onChangeText={setEstado}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Hora"
+                value={hora}
+                onChangeText={setHora}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Tipo"
+                value={tipo}
+                onChangeText={setTipo}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
 
-                    <Text style={styles.label}>Hora:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={hora}
-                        onChangeText={setHora}
-                        placeholder="Ej. 10:00 AM"
-                        placeholderTextColor="#999"
-                        keyboardType="default" 
-                    />
+            
 
-                    <Text style={styles.label}>Tipo:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={tipo}
-                        onChangeText={setTipo}
-                        placeholder="Ej. Consulta / Revisión / Urgencia"
-                        placeholderTextColor="#999"
-                    />
+            <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading}>
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.textoBoton} >{esEdicion ? "Guardar cambios" : "Crear cita"}</Text>
+                )}
+            </TouchableOpacity>
 
-                    <Text style={styles.label}>Observaciones:</Text>
-                    <TextInput
-                        style={styles.inputTextArea}
-                        value={observaciones}
-                        onChangeText={setObservaciones}
-                        placeholder="Añade observaciones aquí..."
-                        placeholderTextColor="#999"
-                        multiline={true}
-                        numberOfLines={4}
-                    />
-
-                    <View style={styles.buttonContainer}>
-                        <BotonComponent
-                            title="Guardar Cambios"
-                            onPress={handleSave}
-                            buttonStyle={styles.saveButton}
-                            textStyle={styles.buttonText}
-                        />
-                        <BotonComponent
-                            title="Cancelar"
-                            onPress={handleCancel}
-                            buttonStyle={styles.cancelButton}
-                            textStyle={styles.buttonText}
-                        />
-                    </View>
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#E0F2F7", // Fondo suave, consistente
+        justifyContent: "center",
         alignItems: "center",
-        paddingTop: 20, // Ajuste para SafeAreaView
+        padding: 16,
+        backgroundColor: "#f5f5f5",
     },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f0f4f8',
-    },
-    loadingText: {
-        marginTop: 15,
-        fontSize: 18,
-        color: '#555',
-    },
+
     title: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: "bold",
-        marginBottom: 25,
-        color: "#2C3E50",
-        textAlign: 'center',
+        marginBottom: 24,
+        textAlign: "center",
     },
-    formScrollView: {
-        width: "100%",
-        paddingHorizontal: 20,
-    },
-    formCard: {
-        backgroundColor: "#FFFFFF",
-        borderRadius: 15,
-        padding: 20,
-        marginBottom: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 8,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: "#34495E",
-        marginBottom: 8,
-        marginTop: 10,
-    },
+
     input: {
-        height: 48,
-        borderColor: "#BDC3C7", // Borde suave
+        height: 50,
+        borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
-        paddingHorizontal: 12,
-        fontSize: 16,
-        color: "#34495E",
-        backgroundColor: "#F9F9F9", // Fondo claro para inputs
-        marginBottom: 15,
+        paddingHorizontal: 16,
+        marginBottom: 16,
+        width: "80%",
     },
     inputTextArea: {
-        borderColor: "#BDC3C7",
+        height: 120,
+        borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 10, // Ajuste para multiline
-        fontSize: 16,
-        color: "#34495E",
-        backgroundColor: "#F9F9F9",
-        marginBottom: 15,
-        minHeight: 100, // Altura mínima para el área de texto
-        textAlignVertical: 'top', // Para que el texto empiece arriba
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        marginBottom: 16,
+        width: "80%",
+        textAlignVertical: 'top',
     },
-    buttonContainer: {
-        flexDirection: "row",
-        justifyContent: "space-around",
+
+    boton: {
+        backgroundColor: "#1976D2",
+        padding: 15,
+        borderRadius: 8,
+        alignItems: "center",
+        width: "80%",
         marginTop: 20,
     },
-    saveButton: {
-        backgroundColor: "#28A745", // Verde para guardar
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        minWidth: 140,
-        alignItems: 'center',
-    },
-    cancelButton: {
-        backgroundColor: "#6C757D", // Gris para cancelar
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        minWidth: 140,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
+    textoBoton: {
+        color: "#fff",
         fontSize: 16,
+        fontWeight: "bold",
+    },
+    error: {
+        color: "red",
+        marginTop: 10,
+        textAlign: "center",
     },
 });

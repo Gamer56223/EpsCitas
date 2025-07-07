@@ -2,22 +2,17 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView } from "react-native";
 import BotonComponent from "../../components/BottonComponent"; 
 
-export default function DetalleEps({ route, navigation }) {
-    
+export default function DetalleEspecialidad({ route, navigation }) {
+   
     const { epsId } = route.params;
 
     const [eps, setEps] = useState(null);
     const [loading, setLoading] = useState(true);
 
+  
     
-    const epsEjemplo = [
-        { id: '1', Nombre: 'Eps Sanidad', direccion: 'Duitama - Boyacá', Telefono: '3107890890', Nit: '80000001'},
-        { id: '2', Nombre: 'Salud +', direccion: 'Caracas - Venezuela', Telefono: '3110907890', Nit: '80000002'},
-        { id: '3', Nombre: 'Nueva EPS', direccion: 'Santa Fe de Bogotá', Telefono: '3107890010', Nit: '80000003'},
-    ];
 
     useEffect(() => {
-        // Simular una carga de datos basada en el epsId
         const foundEps = epsEjemplo.find(e => e.id === epsId);
         setEps(foundEps);
         setLoading(false);
@@ -27,7 +22,7 @@ export default function DetalleEps({ route, navigation }) {
         return (
             <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f4f8' }]}>
                 <ActivityIndicator size="large" color="#007B8C" />
-                <Text style={{ marginTop: 15, fontSize: 18, color: '#555' }}>Cargando detalles de la EPS...</Text>
+                <Text style={{ marginTop: 15, fontSize: 18, color: '#555' }}>Cargando detalles de la Eps...</Text>
             </View>
         );
     }
@@ -35,9 +30,9 @@ export default function DetalleEps({ route, navigation }) {
     if (!eps) {
         return (
             <SafeAreaView style={[styles.container, {backgroundColor: '#f0f4f8'}]}>
-                <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de EPS</Text>
+                <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de la Eps</Text>
                 <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
-                    <Text style={[styles.errorText, {color: 'red'}]}>No se encontraron detalles para esta EPS.</Text>
+                    <Text style={[styles.errorText, {color: 'red'}]}>No se encontraron detalles para esta eps.</Text>
                     <BotonComponent
                         title="Volver al Listado"
                         onPress={() => navigation.goBack()}
@@ -51,14 +46,23 @@ export default function DetalleEps({ route, navigation }) {
 
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: '#f0f4f8'}]}>
-            <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de EPS</Text>
+            <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de la Eps</Text>
 
             <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
                 <Text style={[styles.epsName, {color: '#2c3e50'}]}>{eps.Nombre}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{eps.id}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Dirección: </Text>{eps.direccion}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Teléfono: </Text>{eps.Telefono}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>NIT: </Text>{eps.Nit}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Nombre: </Text>{eps.Nombre}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Dirección: </Text>{eps.Direccion}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Telefono: </Text>{eps.Telefono}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Nit: </Text>{eps.Nit}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Id Especialidad: </Text>{eps.IdEspecialidad}</Text>
+
+
+
+
+                {eps.Area && (
+                    <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Área: </Text>{eps.Area}</Text>
+                )}
             </View>
 
             <BotonComponent

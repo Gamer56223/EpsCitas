@@ -1,283 +1,238 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput, SafeAreaView, ActivityIndicator, Alert } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, TextInput, StyleSheet, Button, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { useRoute } from '@react-navigation/native';
+import BotonComponent from "../../components/BottonComponent";
 
-export default function EditarPaciente({ route, navigation }) {
-    const { pacienteId } = route.params || {};
+import { crearPaciente, editarPaciente } from "../../Src/Servicios/PacienteService";
 
-    const [paciente, setPaciente] = useState(null);
-    const [loading, setLoading] = useState(true);
+export default function EditarPaciente({ navigation }) {
+    const route = useRoute();
 
-    // Estados para los campos del formulario
-    const [nombre, setNombre] = useState('');
-    const [apellido, setApellido] = useState('');
-    const [correo, setCorreo] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [tipoDocumento, setTipoDocumento] = useState('');
-    const [numeroDocumento, setNumeroDocumento] = useState('');
-    const [fechaNacimiento, setFechaNacimiento] = useState('');
-    const [genero, setGenero] = useState('');
+    const paciente = route.params?.paciente;
 
-    // Datos de ejemplo para simular la carga de un Paciente a editar
-    const pacientesEjemplo = [
-        { id: '1', Nombre: 'Angie', Apellido: 'Cardenas', Correo: 'cardenas@gmail.com', Telefono: '3108909090', TipoDocumento: 'CC', NumeroDocumento: '1052836128', FechaNacimiento: '04/05/2007', Genero: 'Femenino'},
-        { id: '2', Nombre: 'Carlos', Apellido: 'Rodríguez', Correo: 'carlol@gmail.com', Telefono: '3213595990', TipoDocumento: 'CC', NumeroDocumento: '1052836122', FechaNacimiento: '04/12/2003', Genero: 'Masculino'},
-        { id: '3', Nombre: 'Diane', Apellido: 'León', Correo: 'diane@gmail.com', Telefono: '3107890890', TipoDocumento: 'CC', NumeroDocumento: '1052836120', FechaNacimiento: '17/06/1988', Genero: 'Femenino'},
-    ];
+    const [nombre, setNombre] = useState(paciente?.Nombre || "");
+    const [apellido, setApellido] = useState(paciente?.Apellido || "");
+    const [correo, setCorreo] = useState(paciente?.Correo || "");
+    const [telefono, setTelefono] = useState(paciente?.Telefono || "");
+    const [direccion, setDireccion] = useState(paciente?.Direccion || "");
+    const [tipodocumento, setTipoDocumento] = useState(paciente?.TipoDocumento || "");
+    const [numerodocumento, setNumeroDocumento] = useState(paciente?.NumeroDocumento || "");
+    const [fechanacimiento, setFechaNacimiento] = useState(paciente?.FechaNacimiento || "");
+    const [genero, setGenero] = useState(paciente?.Genero || "");
+    const [ideps, setIdEps] = useState(paciente?.IdEps || "");
 
-    useEffect(() => {
-        if (pacienteId) {
-            // Si hay un pacienteId, significa que estamos editando un paciente existente
-            const foundPaciente = pacientesEjemplo.find(p => p.id === pacienteId);
-            if (foundPaciente) {
-                setPaciente(foundPaciente);
-                setNombre(foundPaciente.Nombre);
-                setApellido(foundPaciente.Apellido);
-                setCorreo(foundPaciente.Correo);
-                setTelefono(foundPaciente.Telefono);
-                setTipoDocumento(foundPaciente.TipoDocumento);
-                setNumeroDocumento(foundPaciente.NumeroDocumento);
-                setFechaNacimiento(foundPaciente.FechaNacimiento);
-                setGenero(foundPaciente.Genero);
-            } else {
-                Alert.alert("Error", "Paciente no encontrado.");
-                navigation.goBack(); // Volver si el paciente no existe
-            }
-        } else {
-            // Si no hay pacienteId, estamos creando un nuevo paciente, los campos se quedan vacíos
+    const [loading, setLoading] = useState(false);
+
+    const esEdicion = !!paciente;
+
+    const handleGuardar = async () => {
+        if (!nombre || !apellido || !correo || !telefono || !direccion || !tipodocumento || !numerodocumento || !fechanacimiento || !genero || !ideps) {
+            Alert.alert("Campos requeridos", "Por favor, ingrese todos los campos");
+            return;
         }
-        setLoading(false);
-    }, [pacienteId]);
 
-    const handleSave = () => {
-        // Lógica para guardar el Paciente (crear o actualizar)
-        const pacienteData = {
-            id: pacienteId || new Date().getTime().toString(), // Generar ID si es nuevo
-            Nombre: nombre,
-            Apellido: apellido,
-            Correo: correo,
-            Telefono: telefono,
-            TipoDocumento: tipoDocumento,
-            NumeroDocumento: numeroDocumento,
-            FechaNacimiento: fechaNacimiento,
-            Genero: genero,
-        };
-        console.log("Datos a guardar:", pacienteData);
-        Alert.alert("Guardar", "Funcionalidad de guardar pendiente. Datos en consola.");
-        navigation.goBack(); // Volver a la pantalla anterior después de guardar
+        setLoading(true);
+        let result;
+        try {
+            if (esEdicion) {
+                result = await editarPaciente(paciente.id, {
+                    Nombre: nombre,
+                    Apellido: apellido, 
+                    Correo: correo,
+                    Telefono: telefono,
+                    Direccion: direccion,
+                    TipoDocumento: tipodocumento,
+                    NumeroDocumento: numerodocumento,
+                    FechaNacimiento: fechanacimiento,
+                    Genero: genero,
+                    IdEps: ideps
+                });
+            } else {
+                result = await crearPaciente({
+                    Nombre: nombre,
+                    Apellido: apellido, 
+                    Correo: correo,
+                    Telefono: telefono,
+                    Direccion: direccion,
+                    TipoDocumento: tipodocumento,
+                    NumeroDocumento: numerodocumento,
+                    FechaNacimiento: fechanacimiento,
+                    Genero: genero,
+                    IdEps: ideps
+                });
+            }
+
+            if (result.success) {
+                Alert.alert("Éxito", esEdicion ? "Paciente actualizado correctamente" : "Paciente creado correctamente");
+                navigation.goBack();
+            } else {
+                Alert.alert("Error", result.message || "No se pudo guardar el paciente");
+            }
+        } catch (error) {
+            console.error("Error al guardar paciente:", error);
+            Alert.alert("Error", error.message || "Ocurrió un error inesperado al guardar el paciente");
+        } finally {
+            setLoading(false);
+        }
     };
-
-    const handleCancel = () => {
-        navigation.goBack(); // Volver sin guardar cambios
-    };
-
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007B8C" />
-                <Text style={styles.loadingText}>Cargando datos del Paciente...</Text>
-            </View>
-        );
-    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <Text style={styles.title}>{pacienteId ? "Editar Paciente" : "Registrar Nuevo Paciente"}</Text>
+        <View style={styles.container}>
+            <Text style={styles.title}>{esEdicion ? "Editar Paciente" : "Nuevo Paciente"}</Text>
 
-            <ScrollView style={styles.formScrollView}>
-                <View style={styles.formCard}>
-                    <Text style={styles.label}>Nombre:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={nombre}
-                        onChangeText={setNombre}
-                        placeholder="Ej. Ana"
-                        placeholderTextColor="#999"
-                    />
+            <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={nombre}
+                onChangeText={setNombre}
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Apellido"
+                value={apellido}
+                onChangeText={setApellido}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Correo"
+                value={correo}
+                onChangeText={setCorreo}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Telefono"
+                value={telefono}
+                onChangeText={setTelefono}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Direcciónn"
+                value={direccion}
+                onChangeText={setDireccion}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Tipo Documento"
+                value={tipodocumento}
+                onChangeText={setTipoDocumento}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Número Documento"
+                value={numerodocumento}
+                onChangeText={setNumeroDocumento}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Fecha Nacimiento"
+                value={fechanacimiento}
+                onChangeText={setFechaNacimiento}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Genero"
+                value={genero}
+                onChangeText={setGenero}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
+            <TextInput
+                style={styles.input}
+                placeholder="Id Eps"
+                value={ideps}
+                onChangeText={setIdEps}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+            />
 
-                    <Text style={styles.label}>Apellido:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={apellido}
-                        onChangeText={setApellido}
-                        placeholder="Ej. García"
-                        placeholderTextColor="#999"
-                    />
+            <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading}>
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.textoBoton} >{esEdicion ? "Guardar cambios" : "Crear paciente"}</Text>
+                )}
+            </TouchableOpacity>
 
-                    <Text style={styles.label}>Correo:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={correo}
-                        onChangeText={setCorreo}
-                        placeholder="Ej. ana.garcia@example.com"
-                        placeholderTextColor="#999"
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                    />
-
-                    <Text style={styles.label}>Teléfono:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={telefono}
-                        onChangeText={setTelefono}
-                        placeholder="Ej. 3001234567"
-                        placeholderTextColor="#999"
-                        keyboardType="phone-pad"
-                    />
-
-                    <Text style={styles.label}>Tipo de Documento:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={tipoDocumento}
-                        onChangeText={setTipoDocumento}
-                        placeholder="Ej. CC, TI, Pasaporte"
-                        placeholderTextColor="#999"
-                    />
-
-                    <Text style={styles.label}>Número de Documento:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={numeroDocumento}
-                        onChangeText={setNumeroDocumento}
-                        placeholder="Ej. 1234567890"
-                        placeholderTextColor="#999"
-                        keyboardType="numeric"
-                    />
-
-                    <Text style={styles.label}>Fecha de Nacimiento:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={fechaNacimiento}
-                        onChangeText={setFechaNacimiento}
-                        placeholder="DD/MM/AAAA"
-                        placeholderTextColor="#999"
-                        keyboardType="numbers-and-punctuation" // O podrías usar 'default' y una librería de selección de fecha
-                    />
-
-                    <Text style={styles.label}>Género:</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={genero}
-                        onChangeText={setGenero}
-                        placeholder="Ej. Masculino / Femenino / Otro"
-                        placeholderTextColor="#999"
-                    />
-
-                    <View style={styles.buttonContainer}>
-                        <BotonComponent
-                            title="Guardar Cambios"
-                            onPress={handleSave}
-                            buttonStyle={styles.saveButton}
-                            textStyle={styles.buttonText}
-                        />
-                        <BotonComponent
-                            title="Cancelar"
-                            onPress={handleCancel}
-                            buttonStyle={styles.cancelButton}
-                            textStyle={styles.buttonText}
-                        />
-                    </View>
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#E0F2F7", // Fondo suave, consistente
+        justifyContent: "center",
         alignItems: "center",
-        paddingTop: 20, // Ajuste para SafeAreaView
+        padding: 16,
+        backgroundColor: "#f5f5f5",
     },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f0f4f8',
-    },
-    loadingText: {
-        marginTop: 15,
-        fontSize: 18,
-        color: '#555',
-    },
+
     title: {
-        fontSize: 28,
+        fontSize: 24,
         fontWeight: "bold",
-        marginBottom: 25,
-        color: "#2C3E50",
-        textAlign: 'center',
+        marginBottom: 24,
+        textAlign: "center",
     },
-    formScrollView: {
-        width: "100%",
-        paddingHorizontal: 20,
-    },
-    formCard: {
-        backgroundColor: "#FFFFFF",
-        borderRadius: 15,
-        padding: 20,
-        marginBottom: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 8,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: "#34495E",
-        marginBottom: 8,
-        marginTop: 10,
-    },
+
     input: {
-        height: 48,
-        borderColor: "#BDC3C7", // Borde suave
+        height: 50,
+        borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
-        paddingHorizontal: 12,
-        fontSize: 16,
-        color: "#34495E",
-        backgroundColor: "#F9F9F9", // Fondo claro para inputs
-        marginBottom: 15,
+        paddingHorizontal: 16,
+        marginBottom: 16,
+        width: "80%",
     },
-    inputTextArea: { // En caso de que necesites un área de texto más grande
-        borderColor: "#BDC3C7",
+    inputTextArea: {
+        height: 120,
+        borderColor: "#ccc",
         borderWidth: 1,
         borderRadius: 8,
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
         paddingVertical: 10,
-        fontSize: 16,
-        color: "#34495E",
-        backgroundColor: "#F9F9F9",
-        marginBottom: 15,
-        minHeight: 100,
+        marginBottom: 16,
+        width: "80%",
         textAlignVertical: 'top',
     },
-    buttonContainer: {
-        flexDirection: "row",
-        justifyContent: "space-around",
+
+    boton: {
+        backgroundColor: "#1976D2",
+        padding: 15,
+        borderRadius: 8,
+        alignItems: "center",
+        width: "80%",
         marginTop: 20,
     },
-    saveButton: {
-        backgroundColor: "#28A745", // Verde para guardar
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        minWidth: 140,
-        alignItems: 'center',
-    },
-    cancelButton: {
-        backgroundColor: "#6C757D", // Gris para cancelar
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 8,
-        minWidth: 140,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
+    textoBoton: {
+        color: "#fff",
         fontSize: 16,
+        fontWeight: "bold",
+    },
+    error: {
+        color: "red",
+        marginTop: 10,
+        textAlign: "center",
     },
 });

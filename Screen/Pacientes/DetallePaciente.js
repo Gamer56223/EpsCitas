@@ -2,22 +2,19 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView } from "react-native";
 import BotonComponent from "../../components/BottonComponent"; 
 
-export default function DetallePaciente({ route, navigation }) {
+export default function Detallepaciente({ route, navigation }) {
    
     const { pacienteId } = route.params;
 
-    const [paciente, setPaciente] = useState(null);
+    const [especialidad, setEspecialidad] = useState(null);
     const [loading, setLoading] = useState(true);
 
-   
-    const pacientesEjemplo = [
-        { id: '1', Nombre: 'Angie', Apellido: 'Cardenas', Correo: 'cardenas@gmail.com', Telefono: '3108909090', TipoDocumento: 'CC', NumeroDocumento: '1052836128', FechaNacimiento: '04/05/2007', Genero: 'Femenino'},
-        { id: '2', Nombre: 'Carlos', Apellido: 'Rodríguez', Correo: 'carlol@gmail.com', Telefono: '3213595990', TipoDocumento: 'CC', NumeroDocumento: '1052836122', FechaNacimiento: '04/12/2003', Genero: 'Masculino'},
-        { id: '3', Nombre: 'Diane', Apellido: 'León', Correo: 'diane@gmail.com', Telefono: '3107890890', TipoDocumento: 'CC', NumeroDocumento: '1052836120', FechaNacimiento: '17/06/1988', Genero: 'Femenino'},
-    ];
+  
+    
 
     useEffect(() => {
-        const foundPaciente = pacientesEjemplo.find(p => p.id === pacienteId);
+        // Simular una carga de datos basada en el especialidadId
+        const foundPaciente = pacientesEjemplo.find(e => e.id === pacienteId);
         setPaciente(foundPaciente);
         setLoading(false);
     }, [pacienteId]);
@@ -34,7 +31,7 @@ export default function DetallePaciente({ route, navigation }) {
     if (!paciente) {
         return (
             <SafeAreaView style={[styles.container, {backgroundColor: '#f0f4f8'}]}>
-                <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de Paciente</Text>
+                <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle del Paciente</Text>
                 <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
                     <Text style={[styles.errorText, {color: 'red'}]}>No se encontraron detalles para este paciente.</Text>
                     <BotonComponent
@@ -50,17 +47,25 @@ export default function DetallePaciente({ route, navigation }) {
 
     return (
         <SafeAreaView style={[styles.container, {backgroundColor: '#f0f4f8'}]}>
-            <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de Paciente</Text>
+            <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle del Paciente</Text>
 
             <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
-                <Text style={[styles.pacienteName, {color: '#2c3e50'}]}>{paciente.Nombre} {paciente.Apellido}</Text>
+                <Text style={[styles.pacienteName, {color: '#2c3e50'}]}>{paciente.Nombre}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{paciente.id}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Apellido: </Text>{paciente.Apellido}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Correo: </Text>{paciente.Correo}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Teléfono: </Text>{paciente.Telefono}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Tipo de Documento: </Text>{paciente.TipoDocumento}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Número de Documento: </Text>{paciente.NumeroDocumento}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Fecha de Nacimiento: </Text>{paciente.FechaNacimiento}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Género: </Text>{paciente.Genero}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Telefono: </Text>{paciente.Telefono}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Dirección: </Text>{paciente.Direccion}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Tipo Documento: </Text>{paciente.TipoDocumento}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Número Documento: </Text>{paciente.NumeroDocumento}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Fecha Nacimiento: </Text>{paciente.FechaNacimiento}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Genero: </Text>{paciente.Genero}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Id Eps: </Text>{paciente.IdEps}</Text>
+
+
+                {paciente.Area && (
+                    <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Área: </Text>{paciente.Area}</Text>
+                )}
             </View>
 
             <BotonComponent

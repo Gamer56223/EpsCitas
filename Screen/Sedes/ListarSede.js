@@ -1,142 +1,160 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons
+import BotonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
+import EspecialidadCard from "../../components/EspecialidadCard";
+import { useNavigation } from "@react-navigation/native";
+import { listarSedes, eliminarSede } from "../../Src/Servicios/SedeService";
+
+export default function ListarSede (){
+    const [sedes, setSedes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigation = useNavigation();
+
+    const handleSedes = async () => {
+        setLoading(true);
+        try {
+            const result = await listarSedes();
+            if (result.success) {
+                setSedes(result.data);
+            } else {
+                Alert.alert ("Error", result.message || "No se pudierón cargas las sedes");
+            }
+        } catch (error) {
+            Alert.alert ("Error", "No se pudierón cargas las sedes");
+        } finally {
+            setLoading(false);
+        }
+
+    };
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', handleSedes);
+        return unsubscribe;
+    }, [navigation]);
+
+    const handleEliminar = (id) => {
+        Alert.alert(
+            "Eliminar Sede",
+            "¿Estás seguro de que deseas eliminar esta sede?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+
+                    onPress: async () => {
+                        try {
+                            const result = await eliminarSede(id);
+                            if (result.success) {
+                                // setEspecialidades (especialidades.filter((e) => e.id !== id));
+                                handleSedes();
+                            } else {
+                                Alert.alert("Error", result.message || "No se pudo eliminar la Sede");
+                            }
+                        } catch (error) {
+                            Alert.alert("Error", "No se pudo eliminar la sede");
+                        }
+                    },
+                }
+            ]
+        )
+    }
+
+    const handleCrear = () => {
+        navigation.navigate('CrearSede');
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#1976D2" />
+            </View>
+        );
+    }
+
+    const handleEditar = (sede) => {
+        navigation.navigate("EditarSede", {sede});
 
 
-export default function ListarSede ({navigation}){
-
-    const SedesEjemplo = [
-        { id: '1', Nombre: 'Sede Santa Fe', Direccion: 'Calle 57 - El Campin', Telefono: '3108909090'},
-        { id: '2', Nombre: 'Sede Soacha', Direccion: 'Calle 22', Telefono: '7603102'},
-        { id: '3', Nombre: 'Sede Bosa', Direccion: 'Calle 11', Telefono: '7603100'},
-    ];
+    }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Listado de Sedes</Text>
-
-            <ScrollView style={styles.sedeScrollView}>
-                {SedesEjemplo.map((sede) => (
-                    <View key={sede.id} style={styles.sedeCard}>
-                        <Text style={styles.sedeTitle}>{sede.Nombre}</Text>
-                        {/* Se aplican estilos de negrita solo a los nombres de los campos existentes */}
-                        <Text style={styles.sedeDetail}><Text style={styles.detailLabel}>Direccion: </Text>{sede.Direccion}</Text>
-                        <Text style={styles.sedeDetail}><Text style={styles.detailLabel}>Telefono: </Text>{sede.Telefono}</Text>
-
-
-                        <View style={styles.buttonContainer}>
-                            <BotonComponent
-                                title="Ver Detalles"
-                                onPress={() => navigation.navigate("DetalleSede", { sedeId: sede.id })}
-                                buttonStyle={styles.viewButton}
-                                textStyle={styles.buttonText}
-                            />
-                            <BotonComponent
-                                title="Editar"
-                                onPress={() => navigation.navigate("EditarSede", { sedeId: sede.id })}
-                                buttonStyle={styles.editButton}
-                                textStyle={styles.buttonText}
-                            />
-                        </View>
-                    </View>
-                ))}
-            </ScrollView>
-
-            <BotonComponent
-                title="Agregar Nuevo sede"
-                onPress={() => { /* navigation.navigate("Crearsede") */ }}
-                buttonStyle={styles.newsedeButton}
-                textStyle={styles.buttonText}
+        <View style={{flex: 1}}>
+            <FlatList
+            data={sedes}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+                <SedeCard
+                sede= {item}
+                onEdit={() => handleEditar (item)}
+                onDelete={() => handleEliminar (item.id)}
             />
+            )}
+            ListEmptyComponent = {<Text style = {styles.emptyText}>No Hay Sedes Registradas. </Text>}
+            />
+
+            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
+                <View style={styles.botonCrearContent}>
+                    <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.botonCrearIcon} />
+                    <Text style={styles.textoBotonCrear}>Nueva Sede</Text>
+                </View>
+            </TouchableOpacity>
         </View>
-    );
+    )
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: "#F0F4F8", // Fondo suave
-        alignItems: "center", // Centra el contenido horizontalmente
+        backgroundColor: '#F8F8F8',
+        paddingHorizontal: 10,
+        paddingTop: 10,
     },
-
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        marginBottom: 25,
-        color: "#2C3E50", // Color de título oscuro
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F8F8F8',
     },
-
-    sedeScrollView: {
-        width: "100%", // Ocupa todo el ancho disponible
-        flex: 1, 
+    emptyText: {
+        fontSize: 16,
+        color: '#7F8C8D',
+        textAlign: 'center',
+        marginTop: 50,
     },
-
-    sedeCard: {
-        backgroundColor: "skyblue", // Fondo blanco para cada tarjeta de sede
-        borderRadius: 10,
+    emptyListContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    botonCrear: { // Estilo para el TouchableOpacity
+        backgroundColor: '#1976D2', // Color de fondo
         padding: 15,
-        marginBottom: 15, // Espacio entre tarjetas
-        shadowColor: "#000", // Sombra suave
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3, // Elevación para Android
-        
+        borderRadius: 8,
+        alignItems: 'center',
+        margin: 10,
+        // Sombra para un efecto más bonito
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.27,
+        shadowRadius: 4.65,
+        elevation: 6,
     },
-
-    sedeTitle: {
-        fontSize: 20,
-        fontWeight: "bold",
-        marginBottom: 8,
-        color: "#34495E", // Color para el título de la sede
+    botonCrearContent: { // Contenedor interno para el icono y el texto
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-
-    sedeDetail: {
+    botonCrearIcon: { // Estilo para el icono
+        marginRight: 8, // Espacio entre el icono y el texto
+    },
+    textoBotonCrear: { // Estilo para el texto del botón
+        color: '#FFFFFF',
         fontSize: 16,
-        color: "#5C6F7F", // Color para los detalles de la sede
-        marginBottom: 4,
-    },
-    
-    detailLabel: {
         fontWeight: 'bold',
-    },
-
-    buttonContainer: {
-        flexDirection: "row", // Botones en la misma fila
-        justifyContent: "space-around", // Distribuye los botones equitativamente
-        marginTop: 15,
-    },
-
-    viewButton: {
-        backgroundColor: "#3498DB", // Azul para "Ver Detalles"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120, // Ancho mínimo para los botones
-        alignItems: 'center',
-    },
-
-    editButton: {
-        backgroundColor: "#2ECC71", // Verde para "Editar"
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        minWidth: 120,
-        alignItems: 'center',
-    },
-
-    newsedeButton: {
-        backgroundColor: "#E67E22", // Naranja para "Agregar Nueva Sede"
-        paddingVertical: 15,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        marginTop: 20, // Espacio superior
-        marginBottom: 10, // Espacio inferior si hay más contenido abajo
-    },
-
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        fontSize: 16,
     },
 });

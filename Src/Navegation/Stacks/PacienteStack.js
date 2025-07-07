@@ -3,6 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import ListarPaciente from "../../../Screen/Pacientes/ListarPaciente";
 import DetallePaciente from "../../../Screen/Pacientes/DetallePaciente";
 import EditarPaciente from "../../../Screen/Pacientes/EditarPaciente";
+import AgregarPaciente from "../../../Screen/Pacientes/AgregarPaciente";
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,11 @@ export default function PacientesStack () {
                 name= "EditarPaciente"
                 component={EditarPaciente}
                 options={{ title: "Nuevo/Editar Paciente" }}
+            />
+            <Stack.Screen
+                name= "CrearPaciente" // Nuevo nombre de ruta para la pantalla de creación
+                component={AgregarPaciente} // Asigna el nuevo componente
+                options={{ title: "Nuevo Paciente" }}
             />
         </Stack.Navigator>
     );

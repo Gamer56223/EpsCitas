@@ -10,11 +10,7 @@ export default function DetalleEspecialidad({ route, navigation }) {
     const [loading, setLoading] = useState(true);
 
   
-    const especialidadesEjemplo = [
-        { id: '1', Nombre: 'Cardiología', Descripcion: 'Estudio y tratamiento de enfermedades del corazón y el sistema circulatorio.', Area: 'Medicina Interna'},
-        { id: '2', Nombre: 'Dermatología', Descripcion: 'Diagnóstico y tratamiento de enfermedades de la piel, cabello y uñas.', Area: 'Medicina General'},
-        { id: '3', Nombre: 'Pediatría', Descripcion: 'Atención médica integral para bebés, niños y adolescentes.', Area: 'Medicina Familiar'},
-    ];
+    
 
     useEffect(() => {
         // Simular una carga de datos basada en el especialidadId
