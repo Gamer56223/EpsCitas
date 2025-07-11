@@ -23,7 +23,7 @@ export default function ConsultoriosStack () {
              <Stack.Screen
                 name= "EditarConsultorios"
                 component={EditarConsultorio}
-                options={{ title: "Nuevo/Editar Consultorios" }}
+                options={{ title: "Editar Consultorio" }}
             />
             <Stack.Screen
                 name= "CrearConsultorio"

@@ -1,12 +1,11 @@
 import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons
-import BotonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
-import EspecialidadCard from "../../components/EspecialidadCard";
+import React, { useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import SedeCard from "../../components/SedeCard"; // Asegúrate de que la ruta sea correcta
 import { useNavigation } from "@react-navigation/native";
 import { listarSedes, eliminarSede } from "../../Src/Servicios/SedeService";
 
-export default function ListarSede (){
+export default function ListarSede() {
     const [sedes, setSedes] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigation = useNavigation();
@@ -18,14 +17,14 @@ export default function ListarSede (){
             if (result.success) {
                 setSedes(result.data);
             } else {
-                Alert.alert ("Error", result.message || "No se pudierón cargas las sedes");
+                Alert.alert("Error", result.message || "No se pudieron cargar las sedes");
             }
         } catch (error) {
-            Alert.alert ("Error", "No se pudierón cargas las sedes");
+            console.error("Error al cargar sedes:", error); // Añadir log para depuración
+            Alert.alert("Error", "Ocurrió un error al cargar las sedes."); // Mensaje más genérico para el usuario
         } finally {
             setLoading(false);
         }
-
     };
 
     useEffect(() => {
@@ -42,56 +41,67 @@ export default function ListarSede (){
                 {
                     text: "Eliminar",
                     style: "destructive",
-
                     onPress: async () => {
                         try {
                             const result = await eliminarSede(id);
                             if (result.success) {
-                                // setEspecialidades (especialidades.filter((e) => e.id !== id));
-                                handleSedes();
+                                // Actualizar la lista localmente para una actualización más rápida
+                                setSedes(prevSedes => prevSedes.filter((s) => s.id !== id));
+                                Alert.alert("Éxito", "Sede eliminada correctamente.");
                             } else {
                                 Alert.alert("Error", result.message || "No se pudo eliminar la Sede");
                             }
                         } catch (error) {
-                            Alert.alert("Error", "No se pudo eliminar la sede");
+                            console.error("Error al eliminar sede:", error); // Añadir log
+                            Alert.alert("Error", "No se pudo eliminar la sede.");
                         }
                     },
-                }
+                },
             ]
-        )
-    }
+        );
+    };
 
     const handleCrear = () => {
-        navigation.navigate('CrearSede');
+        navigation.navigate('CrearSede'); // Asegúrate de que esta ruta exista en tu Stack Navigator
     };
 
     if (loading) {
         return (
-            <View style={styles.centered}>
+            <View style={styles.centeredContainer}>
                 <ActivityIndicator size="large" color="#1976D2" />
+                <Text style={styles.loadingText}>Cargando sedes...</Text>
             </View>
         );
     }
 
     const handleEditar = (sede) => {
-        navigation.navigate("EditarSede", {sede});
+        navigation.navigate("EditarSede", { sede }); // Asegúrate de que esta ruta exista y reciba 'sede'
+    };
 
-
-    }
+    // Función para renderizar cada item de la FlatList
+    const renderSedeItem = ({ item }) => (
+        <SedeCard
+            sede={item}
+            onEdit={() => handleEditar(item)}
+            onDelete={() => handleEliminar(item.id)}
+            onPress={() => navigation.navigate('DetalleSede', { sedeId: item.id })} // Agregado para navegar al detalle
+        />
+    );
 
     return (
-        <View style={{flex: 1}}>
+        <View style={styles.container}>
             <FlatList
-            data={sedes}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-                <SedeCard
-                sede= {item}
-                onEdit={() => handleEditar (item)}
-                onDelete={() => handleEliminar (item.id)}
-            />
-            )}
-            ListEmptyComponent = {<Text style = {styles.emptyText}>No Hay Sedes Registradas. </Text>}
+                data={sedes}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderSedeItem}
+                ListEmptyComponent={
+                    <View style={styles.emptyListContainer}>
+                        <Ionicons name="business-outline" size={80} color="#BDC3C7" />
+                        <Text style={styles.emptyText}>No hay sedes registradas.</Text>
+                        <Text style={styles.emptyText}>¡Crea una nueva sede!</Text>
+                    </View>
+                }
+                contentContainerStyle={sedes.length === 0 ? styles.flatListEmpty : styles.flatListContent}
             />
 
             <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
@@ -101,60 +111,78 @@ export default function ListarSede (){
                 </View>
             </TouchableOpacity>
         </View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F8F8',
-        paddingHorizontal: 10,
-        paddingTop: 10,
+        backgroundColor: '#EBF5FB', // Fondo suave, consistente con los otros archivos
+        paddingHorizontal: 15, // Más padding horizontal
+        paddingTop: 15, // Más padding superior
     },
-    centered: {
+    centeredContainer: { // Renombrado para mayor claridad y consistencia
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F8F8F8',
+        backgroundColor: '#EBF5FB',
     },
-    emptyText: {
+    loadingText: {
+        marginTop: 10,
         fontSize: 16,
-        color: '#7F8C8D',
-        textAlign: 'center',
-        marginTop: 50,
+        color: '#555',
+        fontWeight: '500',
     },
     emptyListContainer: {
-        flexGrow: 1,
+        flexGrow: 1, // Permite que el contenedor se expanda y centre su contenido
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 50, // Espacio vertical cuando no hay items
+    },
+    emptyText: {
+        fontSize: 18,
+        color: '#7F8C8D', // Un gris más oscuro
+        textAlign: 'center',
+        marginTop: 15,
+        lineHeight: 25, // Mayor espacio entre líneas
+    },
+    flatListContent: {
+        paddingBottom: 20, // Espacio al final de la lista si hay elementos
+    },
+    flatListEmpty: {
+        flex: 1, // Asegura que el contenido se centre verticalmente cuando la lista está vacía
         justifyContent: 'center',
         alignItems: 'center',
     },
-    botonCrear: { // Estilo para el TouchableOpacity
-        backgroundColor: '#1976D2', // Color de fondo
-        padding: 15,
-        borderRadius: 8,
-        alignItems: 'center',
-        margin: 10,
-        // Sombra para un efecto más bonito
-        shadowColor: "#000",
+    botonCrear: {
+        backgroundColor: '#28A745', // Un verde más amigable y moderno
+        paddingVertical: 14,
+        paddingHorizontal: 25,
+        borderRadius: 10, // Bordes más redondeados
+        alignSelf: 'center', // Centra el botón horizontalmente
+        width: '90%', // Ocupa un buen ancho
+        marginBottom: 20, // Espacio en la parte inferior
+        marginTop: 10,
+        shadowColor: "#28A745", // Sombra a juego con el botón
         shadowOffset: {
             width: 0,
-            height: 3,
+            height: 6, // Sombra más pronunciada
         },
-        shadowOpacity: 0.27,
-        shadowRadius: 4.65,
-        elevation: 6,
+        shadowOpacity: 0.35, // Opacidad de la sombra
+        shadowRadius: 8, // Radio de desenfoque de la sombra
+        elevation: 12, // Elevación para Android
     },
-    botonCrearContent: { // Contenedor interno para el icono y el texto
+    botonCrearContent: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    botonCrearIcon: { // Estilo para el icono
-        marginRight: 8, // Espacio entre el icono y el texto
+    botonCrearIcon: {
+        marginRight: 10, // Espacio entre icono y texto
     },
-    textoBotonCrear: { // Estilo para el texto del botón
+    textoBotonCrear: {
         color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 18, // Tamaño de fuente más grande
+        fontWeight: '700', // Más negrita
     },
 });

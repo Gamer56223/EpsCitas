@@ -1,7 +1,7 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import ListarEps from "../../../Screen/Eps/ListarEps";
 import DetalleEps from "../../../Screen/Eps/DetalleEps";
-import EditarEps from "../../../Screen/Eps/EditarEps"; // <-- Importado con el nombre corregido
+import EditarEps from "../../../Screen/Eps/EditarEps";
 import AgregarEps from "../../../Screen/Eps/AgregarEps";
 import { Button } from "react-native";
 
@@ -14,11 +14,10 @@ export default function EpsStack () {
                 name= "ListarEps"
                 component={ListarEps}
                 options={{
-                    title: "Eps" ,
-                    // Verificacion PRUEBA
+                    title: "EPS" ,
                     headerRight: () => (
                         <Button
-                            onPress={() => alert("Boton en el header")}
+                            onPress={() => alert("Botón en el header")}
                             title="Info"
                             color="red"
                         />
@@ -28,17 +27,17 @@ export default function EpsStack () {
              <Stack.Screen
                 name= "DetalleEps"
                 component={DetalleEps}
-                options={{ title: "Detalle Eps" }}
+                options={{ title: "Detalle EPS" }}
             />
              <Stack.Screen
                 name= "EditarEps"
-                component={EditarEps} // <-- Usando el nombre corregido del componente
-                options={{ title: "Nuevo/Editar Eps" }}
+                component={EditarEps}
+                options={{ title: "Nuevo/Editar EPS" }}
             />
             <Stack.Screen
                 name= "CrearEps"
                 component={AgregarEps}
-                options={{ title: "Nueva Eps" }}
+                options={{ title: "Nueva EPS" }}
             />
         </Stack.Navigator>
     );

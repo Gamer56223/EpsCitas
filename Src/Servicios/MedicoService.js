@@ -1,30 +1,24 @@
 import api from "./conexion";
 
-// Función auxiliar para formatear mensajes de error
 const formatErrorMessage = (errorResponseData) => {
     if (typeof errorResponseData === 'string') {
-        return errorResponseData; // Ya es una cadena
+        return errorResponseData;
     }
     if (errorResponseData && typeof errorResponseData === 'object') {
         if (errorResponseData.errors) {
-            // Si Laravel devuelve errores de validación (e.g., {"errors": {"Nombre": ["msg"]}})
             const messages = Object.values(errorResponseData.errors).flat();
-            return messages.join('\n'); // Une todos los mensajes de error en una sola cadena
+            return messages.join('\n');
         }
         if (errorResponseData.message) {
-            // Si Laravel devuelve un campo 'message' que es un objeto o cadena
             if (typeof errorResponseData.message === 'string') {
                 return errorResponseData.message;
             }
-            // Si 'message' es un objeto (menos común, pero posible)
             return JSON.stringify(errorResponseData.message);
         }
-        // Si es un objeto pero no tiene 'errors' ni 'message', stringify it
         return JSON.stringify(errorResponseData);
     }
-    return "Error desconocido"; // Fallback
+    return "Error desconocido";
 };
-
 
 export const listarMedicos = async () => {
     try {
@@ -57,10 +51,10 @@ export const eliminarMedico = async (id) => {
     }
 };
 
-export const crearMedico = async (data) => {
+export const crearMedicos = async (data) => {
     try {
         const response = await api.post("/crearMedico", data);
-        console.log("Respuesta crearMedico:", response.data);
+        console.log("Respuesta crearMedicos:", response.data);
         return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
@@ -72,11 +66,10 @@ export const crearMedico = async (data) => {
     }
 };
 
-export const editarMedico = async (id, data) => { // Asegúrate de que 'id' se pase como primer argumento
+export const editarMedicos = async (id, data) => {
     try {
-        // La URL debe incluir el ID de la especialidad a editar
-        const response = await api.put(`/editarMedico/${id}`, data); // Asumiendo que tu ruta de Laravel es /actualizarEspecialidad/{id}
-        console.log("Respuesta editarMedico:", response.data);
+        const response = await api.put(`/editarMedico/${id}`, data);
+        console.log("Respuesta editarMedicos:", response.data);
         return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";

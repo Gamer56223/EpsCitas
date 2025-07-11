@@ -1,22 +1,51 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "react-native";
+import BotonComponent from "../../components/BottonComponent";
+import { obtenerConsultorioPorId } from "../../Src/Servicios/ConsultorioService"; // Asumimos esta nueva función
+import { listarSedes } from "../../Src/Servicios/SedeService"; // Para obtener el nombre de la sede
 
 export default function DetalleConsultorio({ route, navigation }) {
-   
     const { consultorioId } = route.params;
 
     const [consultorio, setConsultorio] = useState(null);
+    const [sedeNombre, setSedeNombre] = useState("Cargando..."); // Para mostrar el nombre de la sede
     const [loading, setLoading] = useState(true);
 
-  
-    
-
     useEffect(() => {
-        // Simular una carga de datos basada en el especialidadId
-        const foundConsultorio = consultoriosEjemplo.find(co => co.id === consultorioId);
-        setEspecialidad(foundEspecialidad);
-        setLoading(false);
+        const cargarDetallesConsultorio = async () => {
+            setLoading(true);
+            try {
+                // 1. Cargar el consultorio por su ID
+                const consultorioResult = await obtenerConsultorioPorId(consultorioId);
+                if (consultorioResult.success) {
+                    setConsultorio(consultorioResult.data);
+
+                    // 2. Si el consultorio se cargó, cargar el nombre de la sede
+                    if (consultorioResult.data && consultorioResult.data.IdSede) {
+                        const sedesResult = await listarSedes(); // Necesitamos las sedes para buscar el nombre
+                        if (sedesResult.success) {
+                            const foundSede = sedesResult.data.find(s => s.id === consultorioResult.data.IdSede);
+                            setSedeNombre(foundSede ? foundSede.Nombre : "Desconocida");
+                        } else {
+                            setSedeNombre("Error al cargar sede");
+                        }
+                    } else {
+                        setSedeNombre("N/A"); // Si no tiene IdSede
+                    }
+                } else {
+                    Alert.alert("Error", consultorioResult.message || "No se pudo cargar el consultorio.");
+                    setConsultorio(null); // Asegurarse de que no haya consultorio cargado en caso de error
+                }
+            } catch (error) {
+                console.error("Error al cargar detalles del consultorio:", error);
+                Alert.alert("Error", "Ocurrió un error inesperado al cargar el consultorio.");
+                setConsultorio(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        cargarDetallesConsultorio();
     }, [consultorioId]);
 
     if (loading) {
@@ -53,7 +82,7 @@ export default function DetalleConsultorio({ route, navigation }) {
                 <Text style={[styles.consultorioName, {color: '#2c3e50'}]}>{consultorio.Nombre}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{consultorio.id}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Número: </Text>{consultorio.Numero}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Id Sede: </Text>{consultorio.IdSede}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Sede: </Text>{sedeNombre}</Text>
 
                 {consultorio.Area && (
                     <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Área: </Text>{consultorio.Area}</Text>
@@ -121,7 +150,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     backButton: {
-        backgroundColor: "#007B8C", // Color consistente con el tema
+        backgroundColor: "#007B8C",
         paddingVertical: 12,
         paddingHorizontal: 25,
         borderRadius: 8,

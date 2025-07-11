@@ -37,6 +37,21 @@ export const listarCitas = async () => {
     }
 }
 
+export const obtenerCitaPorId = async (id) => { // Función agregada
+    try {
+        const response = await api.get(`/mostrarCita/${id}`); // Asumiendo que Laravel tiene una ruta como /mostrarCita/{id}
+        console.log("Respuesta obtenerCitaPorId:", response.data);
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
+        console.error(`Error al obtener cita ${id}:`, error.response ? error.response.data : error.message);
+        return {
+            success: false,
+            message: errorMessage,
+        };
+    }
+};
+
 export const eliminarCita = async (id) => {
     console.log("Intentando eliminar cita con ID:", id);
     try {
@@ -53,7 +68,7 @@ export const eliminarCita = async (id) => {
     }
 };
 
-export const crearCita = async (data) => { // Este servicio está bien, espera 'data'
+export const crearCita = async (data) => {
     try {
         const response = await api.post("/crearCita", data);
         console.log("Respuesta crearCita:", response.data);

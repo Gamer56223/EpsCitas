@@ -1,22 +1,39 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "react-native";
+import BotonComponent from "../../components/BottonComponent";
+import { obtenerPacientePorId } from "../../Src/Servicios/PacienteService"; // <--- Asegúrate de crear esta función
 
-export default function Detallepaciente({ route, navigation }) {
-   
+export default function DetallePaciente({ route, navigation }) { // Renombrado a DetallePaciente (PascalCase)
     const { pacienteId } = route.params;
 
-    const [especialidad, setEspecialidad] = useState(null);
+    const [paciente, setPaciente] = useState(null); // Renombrado de especialidad a paciente
     const [loading, setLoading] = useState(true);
 
-  
-    
-
     useEffect(() => {
-        // Simular una carga de datos basada en el especialidadId
-        const foundPaciente = pacientesEjemplo.find(e => e.id === pacienteId);
-        setPaciente(foundPaciente);
-        setLoading(false);
+        const fetchPaciente = async () => {
+            try {
+                const result = await obtenerPacientePorId(pacienteId); // Llama a tu servicio real
+                if (result.success) {
+                    setPaciente(result.data);
+                } else {
+                    Alert.alert("Error", result.message || "No se pudo cargar el paciente.");
+                    setPaciente(null); // Asegura que el estado sea null en caso de error
+                }
+            } catch (error) {
+                console.error("Error al obtener paciente por ID:", error);
+                Alert.alert("Error", "Ocurrió un error al cargar los detalles del paciente.");
+                setPaciente(null); // Asegura que el estado sea null en caso de error
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (pacienteId) { // Asegura que hay un ID para buscar
+            fetchPaciente();
+        } else {
+            setLoading(false);
+            Alert.alert("Error", "ID de paciente no proporcionado.");
+        }
     }, [pacienteId]);
 
     if (loading) {
@@ -50,22 +67,21 @@ export default function Detallepaciente({ route, navigation }) {
             <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle del Paciente</Text>
 
             <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
-                <Text style={[styles.pacienteName, {color: '#2c3e50'}]}>{paciente.Nombre}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{paciente.id}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Apellido: </Text>{paciente.Apellido}</Text>
+                <Text style={[styles.pacienteName, {color: '#2c3e50'}]}>{paciente.Nombre} {paciente.Apellido}</Text> {/* Concatenar Nombre y Apellido */}
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{paciente.id}</Text> {/* Asegúrate de que el ID exista */}
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Correo: </Text>{paciente.Correo}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Telefono: </Text>{paciente.Telefono}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Teléfono: </Text>{paciente.Telefono}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Dirección: </Text>{paciente.Direccion}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Tipo Documento: </Text>{paciente.TipoDocumento}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Número Documento: </Text>{paciente.NumeroDocumento}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Fecha Nacimiento: </Text>{paciente.FechaNacimiento}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Genero: </Text>{paciente.Genero}</Text>
-                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Id Eps: </Text>{paciente.IdEps}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Género: </Text>{paciente.Genero}</Text>
+                <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID EPS: </Text>{paciente.IdEps}</Text>
 
-
-                {paciente.Area && (
+                {/* Si 'Area' no es parte de tu modelo de paciente, puedes eliminar esta línea */}
+                {/* {paciente.Area && (
                     <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Área: </Text>{paciente.Area}</Text>
-                )}
+                )} */}
             </View>
 
             <BotonComponent
@@ -129,7 +145,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     backButton: {
-        backgroundColor: "#007B8C", // Color consistente con el tema
+        backgroundColor: "#007B8C",
         paddingVertical: 12,
         paddingHorizontal: 25,
         borderRadius: 8,

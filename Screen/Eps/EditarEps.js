@@ -1,179 +1,362 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, StyleSheet, Button, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { useRoute } from '@react-navigation/native';
-import BotonComponent from "../../components/BottonComponent";
-
+import { Picker } from '@react-native-picker/picker';
 import { crearEps, editarEps } from "../../Src/Servicios/EpsService";
+import { listarEspecialidades } from "../../Src/Servicios/EspecialidadService";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
-export default function EditarEps({ navigation }) { // <-- Cambiado 'editarEps' a 'EditarEps'
+export default function EditarEps({ navigation }) {
     const route = useRoute();
-
     const eps = route.params?.eps;
 
     const [nombre, setNombre] = useState(eps?.Nombre || "");
-    const [direccion, setDireccion] = useState(eps?.Direccion || ""); // <-- Usar eps?.Direccion
-    const [telefono, setTelefono] = useState(eps?.Telefono || ""); // <-- Usar eps?.Telefono
-    const [nit, setNit] = useState(eps?.Nit || ""); // <-- Usar eps?.Nit
-    const [idespecialidad, setIdEspecialidad] = useState(eps?.IdEspecialidad || ""); // <-- Usar eps?.IdEspecialidad
+    const [direccion, setDireccion] = useState(eps?.direccion || "");
+    const [telefono, setTelefono] = useState(eps?.Telefono || "");
+    const [nit, setNit] = useState(eps?.Nit || "");
+    const [idEspecialidad, setIdEspecialidad] = useState(eps?.idEspecialidad?.toString() || "");
 
+    const [especialidades, setEspecialidades] = useState([]);
 
     const [loading, setLoading] = useState(false);
+    const [loadingEspecialidades, setLoadingEspecialidades] = useState(true);
 
     const esEdicion = !!eps;
 
+    const getAlertMessage = (msg, defaultMsg) => {
+        if (typeof msg === 'string') {
+            return msg;
+        }
+        if (msg && typeof msg === 'object') {
+            if (msg.errors) {
+                const messages = Object.values(msg.errors).flat();
+                return messages.join('\n');
+            }
+            if (msg.message && typeof msg.message === 'string') {
+                return msg.message;
+            }
+            return JSON.stringify(msg);
+        }
+        return defaultMsg;
+    };
+
+    useEffect(() => {
+        const fetchEspecialidades = async () => {
+            setLoadingEspecialidades(true);
+            try {
+                const result = await listarEspecialidades();
+                if (result.success) {
+                    setEspecialidades(result.data);
+                    if (esEdicion && eps?.idEspecialidad) {
+                        setIdEspecialidad(eps.idEspecialidad.toString());
+                    } else if (result.data.length > 0) {
+                        setIdEspecialidad(result.data[0].id.toString());
+                    } else {
+                        setIdEspecialidad("");
+                    }
+                } else {
+                    Alert.alert("Error", result.message || "No se pudieron cargar las especialidades.");
+                }
+            } catch (error) {
+                console.error("Error al cargar especialidades:", error);
+                Alert.alert("Error", "Ocurrió un error inesperado al cargar las especialidades.");
+            } finally {
+                setLoadingEspecialidades(false);
+            }
+        };
+
+        fetchEspecialidades();
+    }, [esEdicion, eps]);
+
     const handleGuardar = async () => {
-        if (!nombre || !direccion || !telefono || !nit || !idespecialidad) {
+        if (!nombre || !direccion || !telefono || !nit || !idEspecialidad) {
             Alert.alert("Campos requeridos", "Por favor, ingrese todos los campos");
+            return;
+        }
+        if (especialidades.length === 0) {
+            Alert.alert("Error", "No hay especialidades disponibles para asignar. Por favor, agregue especialidades primero.");
             return;
         }
 
         setLoading(true);
         let result;
         try {
+            const dataToSave = {
+                Nombre: nombre,
+                direccion: direccion,
+                Telefono: telefono,
+                Nit: nit,
+                idEspecialidad: parseInt(idEspecialidad)
+            };
+
             if (esEdicion) {
-                result = await editarEps(eps.id, {
-                    Nombre: nombre,
-                    Direccion: direccion,
-                    Telefono: telefono,
-                    Nit: nit,
-                    IdEspecialidad: idespecialidad // <-- Asegúrate que coincida con el nombre de la API
-                });
+                result = await editarEps(eps.id, dataToSave);
             } else {
-                result = await crearEps({
-                    Nombre: nombre,
-                    Direccion: direccion,
-                    Telefono: telefono,
-                    Nit: nit,
-                    IdEspecialidad: idespecialidad // <-- Asegúrate que coincida con el nombre de la API
-                });
+                result = await crearEps(dataToSave);
             }
 
             if (result.success) {
-                Alert.alert("Éxito", esEdicion ? "Eps actualizado correctamente" : "Eps creado correctamente");
+                Alert.alert("Éxito", esEdicion ? "Eps actualizada correctamente" : "Eps creada correctamente");
                 navigation.goBack();
             } else {
-                Alert.alert("Error", result.message || "No se pudo guardar la eps");
+                Alert.alert("Error", getAlertMessage(result.message, "No se pudo guardar la eps"));
             }
         } catch (error) {
             console.error("Error al guardar eps:", error);
-            Alert.alert("Error", error.message || "Ocurrió un error inesperado al guardar la eps.");
+            Alert.alert("Error", getAlertMessage(error.message, "Ocurrió un error inesperado al guardar la eps."));
         } finally {
             setLoading(false);
         }
     };
 
+    if (loadingEspecialidades) {
+        return (
+            <View style={styles.centered}>
+                <ActivityIndicator size="large" color="#1976D2" />
+                <Text style={styles.loadingText}>Cargando especialidades...</Text>
+            </View>
+        );
+    }
+
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>{esEdicion ? "Editar Eps" : "Nueva Eps"}</Text>
+        <KeyboardAvoidingView
+            style={styles.keyboardAvoidingView}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={styles.container}>
+                        <Text style={styles.title}>{esEdicion ? "Editar EPS" : "Nueva EPS"}</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Nombre"
-                value={nombre}
-                onChangeText={setNombre}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Dirección"
-                value={direccion}
-                onChangeText={setDireccion} 
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Telefono"
-                value={telefono}
-                onChangeText={setTelefono}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Nit"
-                value={nit}
-                onChangeText={setNit}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Id Especialidad"
-                value={idespecialidad}
-                onChangeText={setIdEspecialidad}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nombre"
+                            placeholderTextColor="#888"
+                            value={nombre}
+                            onChangeText={setNombre}
+                        />
+                        <TextInput
+                            style={styles.inputTextArea}
+                            placeholder="Dirección"
+                            placeholderTextColor="#888"
+                            value={direccion}
+                            onChangeText={setDireccion}
+                            multiline
+                            numberOfLines={4}
+                            textAlignVertical="top"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Teléfono"
+                            placeholderTextColor="#888"
+                            value={telefono}
+                            onChangeText={setTelefono}
+                            keyboardType="phone-pad"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nit"
+                            placeholderTextColor="#888"
+                            value={nit}
+                            onChangeText={setNit}
+                            keyboardType="numeric"
+                        />
 
-            <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading}>
-                {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.textoBoton} >{esEdicion ? "Guardar cambios" : "Crear Eps"}</Text>
-                )}
-            </TouchableOpacity>
+                        {/* Mover el label fuera del pickerContainer */}
+                        <Text style={styles.pickerLabelActual}>Seleccionar Especialidad:</Text>
+                        <View style={styles.pickerContainer}>
+                            {especialidades.length > 0 ? (
+                                <Picker
+                                    selectedValue={idEspecialidad}
+                                    onValueChange={(itemValue) => setIdEspecialidad(itemValue)}
+                                    style={styles.picker}
+                                    itemStyle={Platform.OS === 'ios' ? styles.pickerItem : {}}
+                                >
+                                    <Picker.Item label="-- Seleccione una especialidad --" value="" />
+                                    {especialidades.map((esp) => (
+                                        <Picker.Item
+                                            key={esp.id.toString()}
+                                            label={esp.Nombre || esp.nombre || `Especialidad ID: ${esp.id}`}
+                                            value={esp.id.toString()}
+                                        />
+                                    ))}
+                                </Picker>
+                            ) : (
+                                <Text style={styles.noEspecialidadesText}>No hay especialidades disponibles.</Text>
+                            )}
+                        </View>
 
-        </View>
+                        <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading}>
+                            {loading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <View style={styles.botonContent}>
+                                    <Ionicons name="save-outline" size={22} color="#fff" style={styles.botonIcon} />
+                                    <Text style={styles.textoBoton}>{esEdicion ? "Guardar Cambios" : "Crear EPS"}</Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                            <Ionicons name="arrow-back-circle-outline" size={24} color="#555" />
+                            <Text style={styles.backButtonText}>Volver</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
+    keyboardAvoidingView: {
+        flex: 1,
+        backgroundColor: "#EBF5FB",
+    },
+    scrollContainer: {
+        flexGrow: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingVertical: 20,
+        paddingBottom: 200, // Aumentar este padding para dar espacio al teclado y la barra de navegación
+    },
     container: {
+        width: '90%',
+        maxWidth: 500,
+        padding: 25,
+        borderRadius: 15,
+        backgroundColor: "#FFFFFF",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 6,
+        alignItems: "center",
+    },
+    centered: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        padding: 16,
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#EBF5FB",
     },
-
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#555',
+    },
     title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 24,
+        fontSize: 28,
+        fontWeight: "700",
+        color: "#2C3E50",
+        marginBottom: 30,
         textAlign: "center",
     },
-
     input: {
-        height: 50,
-        borderColor: "#ccc",
+        height: 55,
+        backgroundColor: "#F8F8F8",
+        borderRadius: 10,
+        paddingHorizontal: 18,
+        marginBottom: 18,
+        fontSize: 16,
+        color: "#333333",
+        width: "100%",
         borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        marginBottom: 16,
-        width: "80%",
+        borderColor: "#E0E0E0",
     },
     inputTextArea: {
         height: 120,
-        borderColor: "#ccc",
+        backgroundColor: "#F8F8F8",
+        borderRadius: 10,
+        paddingHorizontal: 18,
+        paddingVertical: 15,
+        marginBottom: 18,
+        fontSize: 16,
+        color: "#333333",
+        width: "100%",
         borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        marginBottom: 16,
-        width: "80%",
+        borderColor: "#E0E0E0",
         textAlignVertical: 'top',
     },
-
+    pickerContainer: {
+        borderColor: "#E0E0E0",
+        borderWidth: 1,
+        borderRadius: 10,
+        marginBottom: 18,
+        width: "100%",
+        backgroundColor: "#F8F8F8",
+        justifyContent: 'center',
+        height: 55,
+    },
+    pickerLabelActual: { // Nuevo estilo para el label del picker
+        alignSelf: 'flex-start', // Alinea a la izquierda dentro del contenedor
+        marginLeft: 5, // Pequeño margen para separación visual
+        marginBottom: 5, // Espacio entre el label y el picker
+        fontSize: 16,
+        color: '#555',
+        fontWeight: '600',
+    },
+    picker: {
+        height: '100%',
+        width: "100%",
+        color: '#333333',
+    },
+    pickerItem: {
+        fontSize: 16,
+        color: '#495057',
+    },
+    noEspecialidadesText: {
+        textAlign: 'center',
+        fontSize: 16,
+        color: '#888',
+        paddingVertical: 10,
+    },
     boton: {
-        backgroundColor: "#1976D2",
-        padding: 15,
-        borderRadius: 8,
-        alignItems: "center",
-        width: "80%",
+        backgroundColor: "#1976D2", // Azul para guardar/editar
+        paddingVertical: 14,
+        paddingHorizontal: 25,
+        borderRadius: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: "100%",
         marginTop: 20,
+        shadowColor: "#1976D2",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    botonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    botonIcon: {
+        marginRight: 10,
     },
     textoBoton: {
         color: "#fff",
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: "bold",
     },
+    backButton: {
+        marginTop: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        backgroundColor: '#E9ECEF',
+    },
+    backButtonText: {
+        marginLeft: 8,
+        fontSize: 16,
+        color: '#555',
+        fontWeight: '500',
+    },
     error: {
-        color: "red",
+        color: "#E74C3C",
         marginTop: 10,
         textAlign: "center",
+        fontSize: 15,
+        fontWeight: '500',
     },
 });

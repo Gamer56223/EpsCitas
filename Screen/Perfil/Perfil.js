@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, Alert, SafeAreaView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
+import { CommonActions } from '@react-navigation/native'; // Importa CommonActions
 
 import api from "../../Src/Servicios/conexion";
 import { logoutUser } from "../../Src/Servicios/AuthService"; 
 
 
-export default function PantallaPerfil({ navigation }) {
+// PantallaPerfil ahora acepta updateUserToken como prop
+export default function PantallaPerfil({ navigation, updateUserToken }) {
     const [usuario, setUsuario] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -16,7 +18,8 @@ export default function PantallaPerfil({ navigation }) {
             try {
                 const token = await AsyncStorage.getItem("userToken");
                 if (!token) {
-                    navigation.replace("Login");
+                    // Si no hay token, forzamos el logout a través de AppNavegacion
+                    updateUserToken(null);
                     return;
                 }
 
@@ -33,8 +36,8 @@ export default function PantallaPerfil({ navigation }) {
                                 text: "OK",
                                 onPress: async () => {
                                     if (error.response.status === 401) {
-                                        await AsyncStorage.removeItem("userToken");
-                                        navigation.replace("Login");
+                                        // Si es un 401, forzamos el logout a través de AppNavegacion
+                                        updateUserToken(null);
                                     }
                                 }
                             }
@@ -48,8 +51,8 @@ export default function PantallaPerfil({ navigation }) {
                             {
                                 text: "OK",
                                 onPress: async () => {
-                                    await AsyncStorage.removeItem("userToken");
-                                    navigation.replace("Login");
+                                    // Si hay error de conexión, forzamos el logout a través de AppNavegacion
+                                    updateUserToken(null);
                                 }
                             }
                         ]
@@ -62,8 +65,8 @@ export default function PantallaPerfil({ navigation }) {
                             {
                                 text: "OK",
                                 onPress: async () => {
-                                    await AsyncStorage.removeItem("userToken");
-                                    navigation.replace("Login");
+                                    // Para cualquier otro error inesperado, forzamos el logout
+                                    updateUserToken(null);
                                 }
                             }
                         ]
@@ -74,21 +77,22 @@ export default function PantallaPerfil({ navigation }) {
             }
         };
         cargarPerfil();
-    }, []);
+    }, [updateUserToken]); // Añadir updateUserToken a las dependencias para que useEffect se re-ejecute si cambia
 
     const handleLogout = async () => {
-      try {
-        const result = await logoutUser();
-        if (result.success) {
-          Alert.alert("Sesión Cerrada", "Has cerrado sesión exitosamente.");
-          navigation.replace("Login"); // Redirigir al login
-        } else {
-          Alert.alert("Error al cerrar sesión", result.message || "No se pudo cerrar la sesión.");
+        try {
+            const result = await logoutUser();
+            if (result.success) {
+                Alert.alert("Sesión Cerrada", "Has cerrado sesión exitosamente.");
+                // Llamamos a la función pasada desde AppNavegacion para actualizar el token a null
+                updateUserToken(null); 
+            } else {
+                Alert.alert("Error al cerrar sesión", result.message || "No se pudo cerrar la sesión.");
+            }
+        } catch (error) {
+            console.error("Error inesperado al cerrar sesión:", error);
+            Alert.alert("Error", "Ocurrió un error inesperado al intentar cerrar sesión.");
         }
-      } catch (error) {
-        console.error("Error inesperado al cerrar sesión:", error);
-        Alert.alert("Error", "Ocurrió un error inesperado al intentar cerrar sesión.");
-      }
     };
 
 
@@ -112,8 +116,8 @@ export default function PantallaPerfil({ navigation }) {
                     <BottonComponent
                         title="Ir a Iniciar Sesión"
                         onPress={async () => {
-                            await AsyncStorage.removeItem("userToken");
-                            navigation.replace("Login");
+                            // Al hacer clic, también forzamos el logout a través de AppNavegacion
+                            updateUserToken(null);
                         }}
                         buttonStyle={styles.loginButton} // Estilo para el botón de ir a Login
                         textStyle={styles.buttonText}
@@ -239,18 +243,18 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     loginButton: { 
-      backgroundColor: "#6C757D", // Gris oscuro
-      paddingVertical: 14,
-      paddingHorizontal: 25,
-      borderRadius: 10,
-      marginTop: 20,
-      width: '90%',
-      alignSelf: 'center',
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      elevation: 5,
+        backgroundColor: "#6C757D", // Gris oscuro
+        paddingVertical: 14,
+        paddingHorizontal: 25,
+        borderRadius: 10,
+        marginTop: 20,
+        width: '90%',
+        alignSelf: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
     },
     buttonText: {
         color: "#FFFFFF",

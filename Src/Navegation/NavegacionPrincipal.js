@@ -17,7 +17,8 @@ import Fontisto from '@expo/vector-icons/Fontisto';
 
 const Tab = createBottomTabNavigator();
 
-export default function NavegacionPrincipal() {
+// NavegacionPrincipal ahora acepta updateUserToken como prop
+export default function NavegacionPrincipal({ updateUserToken }) {
     return (
         <Tab.Navigator
             screenOptions={{
@@ -62,7 +63,8 @@ export default function NavegacionPrincipal() {
 
             <Tab.Screen
                 name="Perfil" // Nombre de la ruta (lo que usas para navegar si es necesario)
-                component={PerfilesStack}
+                // Pasamos updateUserToken como prop a PerfilesStack
+                children={() => <PerfilesStack updateUserToken={updateUserToken} />}
                 options={{
                     headerShown: false,
                     tabBarIcon: ({ color, size }) => (

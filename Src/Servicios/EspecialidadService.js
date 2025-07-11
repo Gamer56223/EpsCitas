@@ -1,35 +1,28 @@
 import api from "./conexion";
 
-// Función auxiliar para formatear mensajes de error
 const formatErrorMessage = (errorResponseData) => {
     if (typeof errorResponseData === 'string') {
-        return errorResponseData; // Ya es una cadena
+        return errorResponseData;
     }
     if (errorResponseData && typeof errorResponseData === 'object') {
         if (errorResponseData.errors) {
-            // Si Laravel devuelve errores de validación (e.g., {"errors": {"Nombre": ["msg"]}})
             const messages = Object.values(errorResponseData.errors).flat();
-            return messages.join('\n'); // Une todos los mensajes de error en una sola cadena
+            return messages.join('\n');
         }
         if (errorResponseData.message) {
-            // Si Laravel devuelve un campo 'message' que es un objeto o cadena
             if (typeof errorResponseData.message === 'string') {
                 return errorResponseData.message;
             }
-            // Si 'message' es un objeto (menos común, pero posible)
             return JSON.stringify(errorResponseData.message);
         }
-        // Si es un objeto pero no tiene 'errors' ni 'message', stringify it
-        return JSON.stringify(errorResponseData);
+        return defaultMsg;
     }
-    return "Error desconocido"; // Fallback
+    return "Error desconocido";
 };
-
 
 export const listarEspecialidades = async () => {
     try {
         const response = await api.get("/listarEspecialidades");
-        console.log("Respuesta listarEspecialidades:", response.data);
         return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
@@ -39,17 +32,15 @@ export const listarEspecialidades = async () => {
             message: errorMessage,
         };
     }
-}
+};
 
-export const eliminarEspecialidad = async (id) => {
-    console.log("Intentando eliminar especialidad con ID:", id);
+export const crearEspecialidad = async (especialidadData) => {
     try {
-        const response = await api.delete(`/eliminarEspecialidad/${id}`);
-        console.log("Respuesta eliminarEspecialidad:", response.data);
-        return { success: true, message: response.data.message || "Especialidad eliminada correctamente" };
+        const response = await api.post("/crearEspecialidad", especialidadData);
+        return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error("Error al eliminar Especialidad:", error.response ? error.response.data : error.message);
+        console.error("Error al crear especialidad:", error.response ? error.response.data : error.message);
         return {
             success: false,
             message: errorMessage,
@@ -57,33 +48,45 @@ export const eliminarEspecialidad = async (id) => {
     }
 };
 
-export const crearEspecialidad = async (data) => {
+export const obtenerEspecialidadPorId = async (id) => {
     try {
-        const response = await api.post("/crearEspecialidad", data);
-        console.log("Respuesta crearEspecialidad:", response.data);
+        const response = await api.get(`/mostrarEspecialidad/${id}`);
         return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error("Error al crear especialidad:", error.response ? error.response.data : error.message);
+        console.error(`Error al obtener especialidad ${id}:`, error.response ? error.response.data : error.message);
         return {
             success: false,
-            message: errorMessage
+            message: errorMessage,
         };
     }
 };
 
-export const editarEspecialidad = async (id, data) => { // Asegúrate de que 'id' se pase como primer argumento
+export const editarEspecialidad = async (id, especialidadData) => {
     try {
-        // La URL debe incluir el ID de la especialidad a editar
-        const response = await api.put(`/editarEspecialidad/${id}`, data); // Asumiendo que tu ruta de Laravel es /actualizarEspecialidad/{id}
-        console.log("Respuesta editarEspecialidad:", response.data);
+        // CAMBIO CRÍTICO AQUÍ: Cambiado de /actualizarEspecialidad a /editarEspecialidad
+        const response = await api.put(`/editarEspecialidad/${id}`, especialidadData);
         return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error("Error al editar la especialidad:", error.response ? error.response.data : error.message);
+        console.error(`Error al editar especialidad ${id}:`, error.response ? error.response.data : error.message);
         return {
             success: false,
-            message: errorMessage
+            message: errorMessage,
+        };
+    }
+};
+
+export const eliminarEspecialidad = async (id) => {
+    try {
+        const response = await api.delete(`/eliminarEspecialidad/${id}`);
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
+        console.error(`Error al eliminar especialidad ${id}:`, error.response ? error.response.data : error.message);
+        return {
+            success: false,
+            message: errorMessage,
         };
     }
 };

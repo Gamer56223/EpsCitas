@@ -3,7 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import ListarEspecialidad from "../../../Screen/Especialidades/ListarEspecialidad";
 import DetalleEspecialidad from "../../../Screen/Especialidades/DetalleEspecialidad";
 import EditarEspecialidad from "../../../Screen/Especialidades/EditarEspecialidad";
-import AgregarEspecialidad from "../../../Screen/Especialidades/AgregarEspecialidad"; // Importa el nuevo componente
+import AgregarEspecialidad from "../../../Screen/Especialidades/AgregarEspecialidad";
 
 const Stack = createStackNavigator();
 
@@ -23,11 +23,11 @@ export default function EspecialidadesStack () {
             <Stack.Screen
                 name= "EditarEspecialidad"
                 component={EditarEspecialidad}
-                options={{ title: "Editar Especialidad" }} // Cambié el título para reflejar que es solo edición
+                options={{ title: "Editar Especialidad" }}
             />
             <Stack.Screen
-                name= "CrearEspecialidad" // Nuevo nombre de ruta para la pantalla de creación
-                component={AgregarEspecialidad} // Asigna el nuevo componente
+                name= "CrearEspecialidad"
+                component={AgregarEspecialidad}
                 options={{ title: "Nueva Especialidad" }}
             />
         </Stack.Navigator>

@@ -1,23 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "react-native";
+import BotonComponent from "../../components/BottonComponent";
+import { obtenerCitaPorId } from "../../Src/Servicios/CitaService"; // Importar el servicio
 
 export default function DetalleCita({ route, navigation }) {
-   
     const { citaId } = route.params;
 
     const [cita, setCita] = useState(null);
     const [loading, setLoading] = useState(true);
 
-  
-    
-
     useEffect(() => {
-        // Simular una carga de datos basada en el especialidadId
-        const foundCita = citasEjemplo.find(c => c.id === citaId);
-        setCita(foundCita);
-        setLoading(false);
-    }, [citaId]);
+        const fetchCitaDetails = async () => {
+            setLoading(true);
+            try {
+                const result = await obtenerCitaPorId(citaId);
+                if (result.success) {
+                    setCita(result.data);
+                } else {
+                    Alert.alert("Error", result.message || "No se pudieron cargar los detalles de la cita.");
+                }
+            } catch (error) {
+                console.error("Error al obtener detalles de la cita:", error);
+                Alert.alert("Error", "Ocurrió un error inesperado al cargar la cita.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCitaDetails();
+    }, [citaId]); // Dependencia del efecto
 
     if (loading) {
         return (
@@ -50,7 +61,7 @@ export default function DetalleCita({ route, navigation }) {
             <Text style={[styles.title, {color: '#2c3e50'}]}>Detalle de Cita</Text>
 
             <View style={[styles.detailCard, {backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)'}]}>
-                <Text style={[styles.especialidadName, {color: '#2c3e50'}]}>{cita.Nombre}</Text>
+                <Text style={[styles.citaName, {color: '#2c3e50'}]}>{cita.Nombre}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{cita.id}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Nombre: </Text>{cita.Nombre}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Fecha: </Text>{cita.Fecha}</Text>
@@ -58,9 +69,10 @@ export default function DetalleCita({ route, navigation }) {
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Hora: </Text>{cita.Hora}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Tipo: </Text>{cita.Tipo}</Text>
 
-                {cita.Area && (
+                {/* Si tienes otros campos como Area, asegúrate de que existan en el backend y el frontend */}
+                {/* {cita.Area && (
                     <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Área: </Text>{cita.Area}</Text>
-                )}
+                )} */}
             </View>
 
             <BotonComponent
@@ -124,7 +136,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     backButton: {
-        backgroundColor: "#007B8C", // Color consistente con el tema
+        backgroundColor: "#007B8C",
         paddingVertical: 12,
         paddingHorizontal: 25,
         borderRadius: 8,

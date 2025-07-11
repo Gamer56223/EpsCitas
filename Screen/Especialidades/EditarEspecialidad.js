@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, StyleSheet, Button, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { useRoute } from '@react-navigation/native';
-import BotonComponent from "../../components/BottonComponent";
-
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { crearEspecialidad, editarEspecialidad } from "../../Src/Servicios/EspecialidadService";
 
 export default function EditarEspecialidad({ navigation }) {
     const route = useRoute();
-
     const especialidad = route.params?.especialidad;
 
     const [nombre, setNombre] = useState(especialidad?.Nombre || "");
@@ -15,6 +13,23 @@ export default function EditarEspecialidad({ navigation }) {
     const [loading, setLoading] = useState(false);
 
     const esEdicion = !!especialidad;
+
+    const getAlertMessage = (msg, defaultMsg) => {
+        if (typeof msg === 'string') {
+            return msg;
+        }
+        if (msg && typeof msg === 'object') {
+            if (msg.errors) {
+                const messages = Object.values(msg.errors).flat();
+                return messages.join('\n');
+            }
+            if (msg.message && typeof msg.message === 'string') {
+                return msg.message;
+            }
+            return JSON.stringify(msg);
+        }
+        return defaultMsg;
+    };
 
     const handleGuardar = async () => {
         if (!nombre || !descripcion) {
@@ -41,101 +56,172 @@ export default function EditarEspecialidad({ navigation }) {
                 Alert.alert("Éxito", esEdicion ? "Especialidad actualizada correctamente" : "Especialidad creada correctamente");
                 navigation.goBack();
             } else {
-                Alert.alert("Error", result.message || "No se pudo guardar la especialidad");
+                Alert.alert("Error", getAlertMessage(result.message, "No se pudo guardar la especialidad"));
             }
         } catch (error) {
             console.error("Error al guardar especialidad:", error);
-            Alert.alert("Error", error.message || "Ocurrió un error inesperado al guardar la especialidad.");
+            Alert.alert("Error", getAlertMessage(error.message, "Ocurrió un error inesperado al guardar la especialidad."));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>{esEdicion ? "Editar Especialidad" : "Nueva Especialidad"}</Text>
+        <KeyboardAvoidingView
+            style={styles.keyboardAvoidingView} // Aplicar estilo aquí
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={styles.container}>
+                        <Text style={styles.title}>{esEdicion ? "Editar Especialidad" : "Nueva Especialidad"}</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Nombre"
-                value={nombre}
-                onChangeText={setNombre}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Descripción"
-                value={descripcion}
-                onChangeText={setDescripcion}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nombre"
+                            placeholderTextColor="#888"
+                            value={nombre}
+                            onChangeText={setNombre}
+                        />
+                        <TextInput
+                            style={styles.inputTextArea}
+                            placeholder="Descripción"
+                            placeholderTextColor="#888"
+                            value={descripcion}
+                            onChangeText={setDescripcion}
+                            multiline
+                            numberOfLines={4}
+                            textAlignVertical="top"
+                        />
 
-            <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading}>
-                {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.textoBoton} >{esEdicion ? "Guardar cambios" : "Crear especialidad"}</Text>
-                )}
-            </TouchableOpacity>
-
-        </View>
+                        <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading}>
+                            {loading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <View style={styles.botonContent}>
+                                    <Ionicons name="save-outline" size={22} color="#fff" style={styles.botonIcon} />
+                                    <Text style={styles.textoBoton}>{esEdicion ? "Guardar Cambios" : "Crear Especialidad"}</Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                            <Ionicons name="arrow-back-circle-outline" size={24} color="#555" />
+                            <Text style={styles.backButtonText}>Volver</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    keyboardAvoidingView: { // Nuevo estilo para KeyboardAvoidingView
         flex: 1,
+        backgroundColor: "#EBF5FB", // Fondo para toda la vista
+    },
+    scrollContainer: {
+        flexGrow: 1,
         justifyContent: "center",
         alignItems: "center",
-        padding: 16,
-        backgroundColor: "#f5f5f5",
+        paddingVertical: 20,
+        paddingBottom: 200, // Aumentar este padding para dar espacio al teclado y la barra de navegación
+        backgroundColor: "#EBF5FB",
     },
-
+    container: {
+        width: '90%',
+        maxWidth: 500,
+        padding: 25,
+        borderRadius: 15,
+        backgroundColor: "#FFFFFF",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 6,
+        alignItems: "center",
+    },
     title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 24,
+        fontSize: 28,
+        fontWeight: "700",
+        color: "#2C3E50",
+        marginBottom: 30,
         textAlign: "center",
     },
-
     input: {
-        height: 50,
-        borderColor: "#ccc",
+        height: 55,
+        backgroundColor: "#F8F8F8",
+        borderRadius: 10,
+        paddingHorizontal: 18,
+        marginBottom: 18,
+        fontSize: 16,
+        color: "#333333",
+        width: "100%",
         borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        marginBottom: 16,
-        width: "80%",
+        borderColor: "#E0E0E0",
     },
     inputTextArea: {
         height: 120,
-        borderColor: "#ccc",
+        backgroundColor: "#F8F8F8",
+        borderRadius: 10,
+        paddingHorizontal: 18,
+        paddingVertical: 15,
+        marginBottom: 18,
+        fontSize: 16,
+        color: "#333333",
+        width: "100%",
         borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        marginBottom: 16,
-        width: "80%",
+        borderColor: "#E0E0E0",
         textAlignVertical: 'top',
     },
-
     boton: {
-        backgroundColor: "#1976D2",
-        padding: 15,
-        borderRadius: 8,
-        alignItems: "center",
-        width: "80%",
+        backgroundColor: "#1976D2", // Azul para guardar/editar
+        paddingVertical: 14,
+        paddingHorizontal: 25,
+        borderRadius: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: "100%",
         marginTop: 20,
+        shadowColor: "#1976D2",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    botonContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    botonIcon: {
+        marginRight: 10,
     },
     textoBoton: {
         color: "#fff",
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: "bold",
     },
+    backButton: {
+        marginTop: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        backgroundColor: '#E9ECEF',
+    },
+    backButtonText: {
+        marginLeft: 8,
+        fontSize: 16,
+        color: '#555',
+        fontWeight: '500',
+    },
     error: {
-        color: "red",
+        color: "#E74C3C",
         marginTop: 10,
         textAlign: "center",
+        fontSize: 15,
+        fontWeight: '500',
     },
 });

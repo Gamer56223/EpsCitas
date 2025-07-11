@@ -4,12 +4,14 @@ import Perfil from "../../../Screen/Perfil/Perfil";
 
 const Stack = createStackNavigator();
 
-export default function PerfilesStack () {
+// PerfilesStack ahora acepta updateUserToken como prop
+export default function PerfilesStack ({ updateUserToken }) {
     return (
         <Stack.Navigator>
             <Stack.Screen
                 name= "Perfil" 
-                component={Perfil}
+                // Pasamos updateUserToken como prop a la pantalla Perfil
+                children={() => <Perfil updateUserToken={updateUserToken} />}
                 options={{ title: "Perfiles" }}
             />
         </Stack.Navigator>

@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
-import { Ionicons } from '@expo/vector-icons'; // Importa Ionicons
-import { crearMedico } from "../../Src/Servicios/MedicoService";
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Platform, ScrollView, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import { Picker } from "@react-native-picker/picker";
+import { crearMedicos } from "../../Src/Servicios/MedicoService";
+import { listarEspecialidades } from "../../Src/Servicios/EspecialidadService";
 
 export default function AgregarMedico({ navigation }) {
     const [nombre, setNombre] = useState("");
@@ -10,10 +12,40 @@ export default function AgregarMedico({ navigation }) {
     const [telefono, setTelefono] = useState("");
     const [tipodocumento, setTipoDocumento] = useState("");
     const [numerodocumento, setNumeroDocumento] = useState("");
-    const [activo, setActivo] = useState("");
+    const [activo, setActivo] = useState("true");
     const [idespecialidad, setIdEspecialidad] = useState("");
 
     const [loading, setLoading] = useState(false);
+    const [loadingEspecialidades, setLoadingEspecialidades] = useState(true);
+    const [especialidades, setEspecialidades] = useState([]);
+
+    useEffect(() => {
+        const cargarEspecialidades = async () => {
+            setLoadingEspecialidades(true);
+            try {
+                const result = await listarEspecialidades();
+                if (result.success) {
+                    setEspecialidades(result.data);
+                    if (result.data.length > 0) {
+                        setIdEspecialidad(result.data[0].id.toString());
+                    } else {
+                        setIdEspecialidad("");
+                    }
+                } else {
+                    Alert.alert(
+                        "Error",
+                        result.message || "No se pudieron cargar las especialidades."
+                    );
+                }
+            } catch (error) {
+                console.error("Error al cargar especialidades:", error);
+                Alert.alert("Error", "Ocurrió un error al cargar las especialidades.");
+            } finally {
+                setLoadingEspecialidades(false);
+            }
+        };
+        cargarEspecialidades();
+    }, []);
 
     const getAlertMessage = (msg, defaultMsg) => {
         if (typeof msg === 'string') {
@@ -24,8 +56,11 @@ export default function AgregarMedico({ navigation }) {
                 const messages = Object.values(msg.errors).flat();
                 return messages.join('\n');
             }
-            if (msg.message && typeof msg.message === 'string') {
-                return msg.message;
+            if (msg.message) {
+                if (typeof msg.message === 'string') {
+                    return msg.message;
+                }
+                return JSON.stringify(msg.message);
             }
             return JSON.stringify(msg);
         }
@@ -33,198 +68,291 @@ export default function AgregarMedico({ navigation }) {
     };
 
     const handleGuardar = async () => {
-        if (!nombre || !apellido || !correo || !telefono || !tipodocumento || !numerodocumento || !activo || !idespecialidad) {
-            Alert.alert("Campos requeridos", "Por favor, ingrese todos los campos");
+        if (!nombre || !apellido || !correo || !telefono || !tipodocumento || !numerodocumento || activo === "" || idespecialidad === "") {
+            Alert.alert("Campos requeridos", "Por favor, ingrese todos los campos y seleccione una especialidad.");
+            return;
+        }
+
+        const especialidadIdNum = parseInt(idespecialidad);
+        if (isNaN(especialidadIdNum) || especialidadIdNum <= 0) {
+            Alert.alert("Error de Especialidad", "Por favor, seleccione una especialidad válida de la lista.");
             return;
         }
 
         setLoading(true);
         try {
-            const result = await crearMedico({
+            const medicoData = {
                 Nombre: nombre,
                 Apellido: apellido,
                 Correo: correo,
                 Telefono: telefono,
                 TipoDocumento: tipodocumento,
                 NumeroDocumento: numerodocumento,
-                Activo: activo,
-                IdEspecialidad: idespecialidad
-            });
+                Activo: activo === "true" ? "Activo" : "Inactivo",
+                idEspecialidad: especialidadIdNum,
+            };
+
+            const result = await crearMedicos(medicoData);
 
             if (result.success) {
-                Alert.alert("Éxito", "Consultorio creado correctamente");
+                Alert.alert("Éxito", "Médico creado correctamente");
                 navigation.goBack();
             } else {
-                Alert.alert("Error", getAlertMessage(result.message, "No se pudo crear el consultorio"));
+                Alert.alert("Error", getAlertMessage(result.message, "No se pudo crear el médico"));
             }
         } catch (error) {
-            console.error("Error al crear consultorio:", error);
-            Alert.alert("Error", getAlertMessage(error.message, "Ocurrió un error inesperado al crear el consultorio."));
+            console.error("Error al crear médico:", error);
+            Alert.alert("Error", getAlertMessage(error.message, "Ocurrió un error inesperado al crear el médico."));
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Nuevo Consultorio</Text>
+        <KeyboardAvoidingView
+            style={styles.keyboardAvoidingView} // Aplicar estilo aquí
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <View style={styles.container}>
+                        <Text style={styles.title}>Nuevo Médico</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Nombre"
-                value={nombre}
-                onChangeText={setNombre}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Apellido"
-                value={apellido}
-                onChangeText={setApellido}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Correo"
-                value={correo}
-                onChangeText={setCorreo}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Telefono"
-                value={telefono}
-                onChangeText={setTelefono}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Tipo Documento"
-                value={tipodocumento}
-                onChangeText={setTipoDocumento}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Número Documento"
-                value={numerodocumento}
-                onChangeText={setNumeroDocumento}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Activo"
-                value={activo}
-                onChangeText={setActivo}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Id Especialidad"
-                value={idespecialidad}
-                onChangeText={setIdEspecialidad}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-            />
+                        {loadingEspecialidades ? (
+                            <ActivityIndicator size="large" color="#1976D2" style={styles.pickerLoading} />
+                        ) : (
+                            <>
+                                <Text style={styles.pickerLabelActual}>Seleccione Especialidad:</Text>
+                                <View style={styles.pickerContainer}>
+                                    <Picker
+                                        selectedValue={idespecialidad}
+                                        onValueChange={(itemValue) => setIdEspecialidad(itemValue)}
+                                        style={styles.picker}
+                                        itemStyle={Platform.OS === 'ios' ? styles.pickerItem : {}}
+                                    >
+                                        <Picker.Item label="-- Seleccione una especialidad --" value="" />
+                                        {especialidades.map((e) => (
+                                            <Picker.Item key={e.id.toString()} label={e.Nombre} value={e.id.toString()} />
+                                        ))}
+                                    </Picker>
+                                </View>
+                            </>
+                        )}
 
-            <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading}>
-                {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <View style={styles.botonContent}> {/* Contenedor para el icono y el texto */}
-                        <Ionicons name="add-circle-outline" size={20} color="#fff" style={styles.botonIcon} />
-                        <Text style={styles.textoBoton}>Crear medico</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nombre"
+                            placeholderTextColor="#888"
+                            value={nombre}
+                            onChangeText={setNombre}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Apellido"
+                            placeholderTextColor="#888"
+                            value={apellido}
+                            onChangeText={setApellido}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Correo"
+                            placeholderTextColor="#888"
+                            value={correo}
+                            onChangeText={setCorreo}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Teléfono"
+                            placeholderTextColor="#888"
+                            value={telefono}
+                            onChangeText={setTelefono}
+                            keyboardType="phone-pad"
+                        />
+
+                        <Text style={styles.pickerLabelActual}>Tipo Documento:</Text>
+                        <View style={styles.pickerContainer}>
+                            <Picker
+                                selectedValue={tipodocumento}
+                                onValueChange={(itemValue) => setTipoDocumento(itemValue)}
+                                style={styles.picker}
+                                itemStyle={Platform.OS === 'ios' ? styles.pickerItem : {}}
+                            >
+                                <Picker.Item label="-- Seleccione Tipo Documento --" value="" />
+                                <Picker.Item label="Cédula de Ciudadanía" value="CC" />
+                                <Picker.Item label="Tarjeta de Identidad" value="TI" />
+                                <Picker.Item label="Cédula de Extranjería" value="CE" />
+                                <Picker.Item label="Pasaporte" value="PAS" />
+                            </Picker>
+                        </View>
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Número Documento"
+                            placeholderTextColor="#888"
+                            value={numerodocumento}
+                            onChangeText={setNumeroDocumento}
+                            keyboardType="numeric"
+                        />
+
+                        <Text style={styles.pickerLabelActual}>Estado Activo:</Text>
+                        <View style={styles.pickerContainer}>
+                            <Picker
+                                selectedValue={activo}
+                                onValueChange={(itemValue) => setActivo(itemValue)}
+                                style={styles.picker}
+                                itemStyle={Platform.OS === 'ios' ? styles.pickerItem : {}}
+                            >
+                                <Picker.Item label="-- Seleccione Estado --" value="" />
+                                <Picker.Item label="Activo" value="true" />
+                                <Picker.Item label="Inactivo" value="false" />
+                            </Picker>
+                        </View>
+
+                        <TouchableOpacity style={styles.boton} onPress={handleGuardar} disabled={loading || loadingEspecialidades}>
+                            {loading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <View style={styles.botonContent}>
+                                    <Ionicons name="add-circle-outline" size={22} color="#fff" style={styles.botonIcon} />
+                                    <Text style={styles.textoBoton}>Crear Médico</Text>
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                            <Ionicons name="arrow-back-circle-outline" size={24} color="#555" />
+                            <Text style={styles.backButtonText}>Volver</Text>
+                        </TouchableOpacity>
                     </View>
-                )}
-            </TouchableOpacity>
-        </View>
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    keyboardAvoidingView: {
         flex: 1,
+        backgroundColor: "#EBF5FB",
+    },
+    scrollContainer: {
+        flexGrow: 1,
         justifyContent: "center",
         alignItems: "center",
-        padding: 16,
-        backgroundColor: "#f5f5f5",
+        paddingVertical: 20,
+        paddingBottom: 200, // Aumentar este padding para dar espacio al teclado y la barra de navegación
     },
-
+    container: {
+        width: '90%',
+        maxWidth: 500,
+        padding: 25,
+        borderRadius: 15,
+        backgroundColor: "#FFFFFF",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 6,
+        alignItems: "center",
+    },
     title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 24,
+        fontSize: 28,
+        fontWeight: "700",
+        color: "#2C3E50",
+        marginBottom: 30,
         textAlign: "center",
     },
-
     input: {
-        height: 50,
-        borderColor: "#ccc",
+        height: 55,
+        backgroundColor: "#F8F8F8",
+        borderRadius: 10,
+        paddingHorizontal: 18,
+        marginBottom: 18,
+        fontSize: 16,
+        color: "#333333",
+        width: "100%",
         borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        marginBottom: 16,
-        width: "80%",
+        borderColor: "#E0E0E0",
     },
-    inputTextArea: {
-        height: 120,
-        borderColor: "#ccc",
+    pickerContainer: {
+        borderColor: "#E0E0E0",
         borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        marginBottom: 16,
-        width: "80%",
-        textAlignVertical: 'top',
+        borderRadius: 10,
+        marginBottom: 18,
+        width: "100%",
+        backgroundColor: "#F8F8F8",
+        justifyContent: 'center',
+        height: 55,
     },
-
+    pickerLabelActual: { // Nuevo estilo para el label del picker
+        alignSelf: 'flex-start', // Alinea a la izquierda dentro del contenedor
+        marginLeft: 5, // Pequeño margen para separación visual
+        marginBottom: 5, // Espacio entre el label y el picker
+        fontSize: 16,
+        color: '#555',
+        fontWeight: '600',
+    },
+    picker: {
+        height: '100%',
+        width: "100%",
+        color: '#333333',
+    },
+    pickerItem: {
+        fontSize: 16,
+        color: '#495057',
+    },
+    pickerLoading: {
+        marginBottom: 18,
+    },
     boton: {
-        backgroundColor: "#1976D2",
-        padding: 15,
-        borderRadius: 8,
-        // Alineación del contenido dentro del botón para el icono y el texto
-        flexDirection: 'row', // Organiza el icono y el texto en fila
-        justifyContent: 'center', // Centra horizontalmente
-        alignItems: 'center',   // Centra verticalmente
-        width: "80%",
+        backgroundColor: "#28A745",
+        paddingVertical: 14,
+        paddingHorizontal: 25,
+        borderRadius: 10,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: "100%",
         marginTop: 20,
-        // Agregando un poco de sombra para un efecto más bonito
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 3,
-        },
-        shadowOpacity: 0.27,
-        shadowRadius: 4.65,
-        elevation: 6,
+        shadowColor: "#28A745",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 10,
     },
     botonContent: {
         flexDirection: 'row',
         alignItems: 'center',
     },
     botonIcon: {
-        marginRight: 8, // Espacio entre el icono y el texto
+        marginRight: 10,
     },
     textoBoton: {
         color: "#fff",
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: "bold",
     },
+    backButton: {
+        marginTop: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        backgroundColor: '#E9ECEF',
+    },
+    backButtonText: {
+        marginLeft: 8,
+        fontSize: 16,
+        color: '#555',
+        fontWeight: '500',
+    },
     error: {
-        color: "red",
+        color: "#E74C3C",
         marginTop: 10,
         textAlign: "center",
+        fontSize: 15,
+        fontWeight: '500',
     },
 });

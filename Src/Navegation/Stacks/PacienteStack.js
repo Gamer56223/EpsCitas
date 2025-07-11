@@ -7,27 +7,27 @@ import AgregarPaciente from "../../../Screen/Pacientes/AgregarPaciente";
 
 const Stack = createStackNavigator();
 
-export default function PacientesStack () {
+export default function PacientesStack() {
     return (
         <Stack.Navigator>
-            <Stack.Screen 
-                name= "ListarPacientes"
+            <Stack.Screen
+                name="ListarPacientes"
                 component={ListarPaciente}
-                options={{ title: "Paciente" }}
+                options={{ title: "Pacientes" }}
             />
-             <Stack.Screen 
-                name= "DetallePaciente"
+            <Stack.Screen
+                name="DetallePaciente"
                 component={DetallePaciente}
                 options={{ title: "Detalle Paciente" }}
             />
-             <Stack.Screen 
-                name= "EditarPaciente"
+            <Stack.Screen
+                name="EditarPaciente"
                 component={EditarPaciente}
-                options={{ title: "Nuevo/Editar Paciente" }}
+                options={{ title: "Editar Paciente" }}
             />
             <Stack.Screen
-                name= "CrearPaciente" // Nuevo nombre de ruta para la pantalla de creación
-                component={AgregarPaciente} // Asigna el nuevo componente
+                name="CrearPaciente"
+                component={AgregarPaciente}
                 options={{ title: "Nuevo Paciente" }}
             />
         </Stack.Navigator>

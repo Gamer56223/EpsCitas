@@ -1,28 +1,23 @@
 import api from "./conexion";
 
-// Función auxiliar para formatear mensajes de error
 const formatErrorMessage = (errorResponseData) => {
     if (typeof errorResponseData === 'string') {
-        return errorResponseData; // Ya es una cadena
+        return errorResponseData;
     }
     if (errorResponseData && typeof errorResponseData === 'object') {
         if (errorResponseData.errors) {
-            // Si Laravel devuelve errores de validación (e.g., {"errors": {"Nombre": ["msg"]}})
             const messages = Object.values(errorResponseData.errors).flat();
-            return messages.join('\n'); // Une todos los mensajes de error en una sola cadena
+            return messages.join('\n');
         }
         if (errorResponseData.message) {
-            // Si Laravel devuelve un campo 'message' que es un objeto o cadena
             if (typeof errorResponseData.message === 'string') {
                 return errorResponseData.message;
             }
-            // Si 'message' es un objeto (menos común, pero posible)
             return JSON.stringify(errorResponseData.message);
         }
-        // Si es un objeto pero no tiene 'errors' ni 'message', stringify it
         return JSON.stringify(errorResponseData);
     }
-    return "Error desconocido"; // Fallback
+    return "Error desconocido";
 };
 
 
@@ -33,13 +28,29 @@ export const listarPacientes = async () => {
         return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error("Error al listar especialidades:", error.response ? error.response.data : error.message);
+        console.error("Error al listar pacientes:", error.response ? error.response.data : error.message);
         return {
             success: false,
             message: errorMessage,
         };
     }
 }
+
+export const obtenerPacientePorId = async (id) => {
+    try {
+        const response = await api.get(`/obtenerPacientePorId/${id}`);
+        console.log(`Respuesta obtenerPacientePorId (${id}):`, response.data);
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
+        console.error(`Error al obtener paciente por ID ${id}:`, error.response ? error.response.data : error.message);
+        return {
+            success: false,
+            message: errorMessage,
+        };
+    }
+};
+
 
 export const eliminarPaciente = async (id) => {
     console.log("Intentando eliminar paciente con ID:", id);
@@ -58,13 +69,15 @@ export const eliminarPaciente = async (id) => {
 };
 
 export const crearPaciente = async (data) => {
+    const payload = { ...data, idEps: Number(data.idEps) };
+    console.log("Datos enviados a crearPaciente (PacienteService):", payload);
     try {
-        const response = await api.post("/crearPaciente", data);
-        console.log("Respuesta crearPaciente:", response.data);
+        const response = await api.post("/crearPaciente", payload);
+        console.log("Respuesta crearPaciente (PacienteService):", response.data);
         return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error("Error al crear paciente:", error.response ? error.response.data : error.message);
+        console.error("Error al crear paciente (PacienteService):", error.response ? error.response.data : error.message);
         return {
             success: false,
             message: errorMessage
@@ -72,15 +85,16 @@ export const crearPaciente = async (data) => {
     }
 };
 
-export const editarPaciente = async (id, data) => { // Asegúrate de que 'id' se pase como primer argumento
+export const editarPaciente = async (id, data) => {
+    const payload = { ...data, idEps: Number(data.idEps) };
+    console.log(`Datos enviados a editarPaciente (ID: ${id}) (PacienteService):`, payload);
     try {
-        // La URL debe incluir el ID de la especialidad a editar
-        const response = await api.put(`/editarPaciente/${id}`, data); // Asumiendo que tu ruta de Laravel es /actualizarEspecialidad/{id}
-        console.log("Respuesta editarPaciente:", response.data);
+        const response = await api.put(`/editarPaciente/${id}`, payload);
+        console.log("Respuesta editarPaciente (PacienteService):", response.data);
         return { success: true, data: response.data };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error("Error al editar el paciente:", error.response ? error.response.data : error.message);
+        console.error("Error al editar el paciente (PacienteService):", error.response ? error.response.data : error.message);
         return {
             success: false,
             message: errorMessage

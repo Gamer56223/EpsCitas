@@ -1,23 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView } from "react-native";
-import BotonComponent from "../../components/BottonComponent"; 
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "react-native";
+import BotonComponent from "../../components/BottonComponent";
+import { obtenerEspecialidadPorId } from "../../Src/Servicios/EspecialidadService"; // Importar el servicio
 
 export default function DetalleEspecialidad({ route, navigation }) {
-   
     const { especialidadId } = route.params;
 
     const [especialidad, setEspecialidad] = useState(null);
     const [loading, setLoading] = useState(true);
 
-  
-    
-
     useEffect(() => {
-        // Simular una carga de datos basada en el especialidadId
-        const foundEspecialidad = especialidadesEjemplo.find(e => e.id === especialidadId);
-        setEspecialidad(foundEspecialidad);
-        setLoading(false);
-    }, [especialidadId]);
+        const cargarDetalleEspecialidad = async () => {
+            setLoading(true);
+            try {
+                const result = await obtenerEspecialidadPorId(especialidadId); // Llama al servicio
+                if (result.success) {
+                    setEspecialidad(result.data);
+                } else {
+                    Alert.alert("Error", result.message || "No se pudo cargar la especialidad.");
+                    navigation.goBack(); // Regresar si hay un error
+                }
+            } catch (error) {
+                console.error("Error al cargar detalle de especialidad:", error);
+                Alert.alert("Error", "Ocurrió un error inesperado al cargar la especialidad.");
+                navigation.goBack(); // Regresar si hay un error
+            } finally {
+                setLoading(false);
+            }
+        };
+        cargarDetalleEspecialidad();
+    }, [especialidadId, navigation]); // Agrega navigation como dependencia
 
     if (loading) {
         return (
@@ -53,9 +65,6 @@ export default function DetalleEspecialidad({ route, navigation }) {
                 <Text style={[styles.especialidadName, {color: '#2c3e50'}]}>{especialidad.Nombre}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>ID: </Text>{especialidad.id}</Text>
                 <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Descripción: </Text>{especialidad.Descripcion}</Text>
-                {especialidad.Area && (
-                    <Text style={[styles.detailText, {color: '#5C6F7F'}]}><Text style={styles.detailLabel}>Área: </Text>{especialidad.Area}</Text>
-                )}
             </View>
 
             <BotonComponent
@@ -119,7 +128,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     backButton: {
-        backgroundColor: "#007B8C", // Color consistente con el tema
+        backgroundColor: "#007B8C",
         paddingVertical: 12,
         paddingHorizontal: 25,
         borderRadius: 8,

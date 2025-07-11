@@ -1,17 +1,22 @@
-// src/Screen/Inicio/Inicio.js
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, Dimensions } from 'react-native';
 import { Ionicons, Feather, Entypo, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
 
-const { width } = Dimensions.get('window'); // Obtener el ancho de la pantalla para estilos responsivos
-const itemWidth = (width / 2) - 30; // 2 ítems por fila con margen
-
 import Fontisto from '@expo/vector-icons/Fontisto';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
+const { width } = Dimensions.get('window');
+
+const CONTAINER_HORIZONTAL_PADDING = 20;
+const GRID_CONTAINER_HORIZONTAL_PADDING = 5;
+const GRID_ITEM_HORIZONTAL_MARGIN = 10;
+
+const availableWidthForGridContent = width - (CONTAINER_HORIZONTAL_PADDING * 2) - (GRID_CONTAINER_HORIZONTAL_PADDING * 2);
+
+const itemWidth = (availableWidthForGridContent - (GRID_ITEM_HORIZONTAL_MARGIN * 4)) / 2;
 
 
 export default function Inicio() {
@@ -23,19 +28,16 @@ export default function Inicio() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="dark-content" backgroundColor="#f0f2f5" /> {/* Estilo de la barra de estado */}
-            <ScrollView style={styles.container}>
-                {/* Encabezado */}
+            <StatusBar barStyle="dark-content" backgroundColor="#f0f2f5" />
+
+            <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContent}>
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Bienvenido a Eps</Text>
                     <Text style={styles.headerSubtitle}>Estado: <Text style={styles.statusText}>Habilitado</Text></Text>
                     <Text style={styles.headerSubtitle}>Carlos Estiven Rodriguez</Text>
-                    
                 </View>
 
-                {/* Contenedor de las casillas de la cuadrícula */}
                 <View style={styles.gridContainer}>
-                    {/* Casilla de Citas */}
                     <TouchableOpacity
                         style={styles.gridItem}
                         onPress={() => navigateToFlow('CitasFlow')}
@@ -44,7 +46,6 @@ export default function Inicio() {
                         <Text style={styles.gridItemText}>Citas</Text>
                     </TouchableOpacity>
 
-                    {/* Casilla de Consultorios */}
                     <TouchableOpacity
                         style={styles.gridItem}
                         onPress={() => navigateToFlow('ConsultoriosFlow')}
@@ -53,7 +54,6 @@ export default function Inicio() {
                         <Text style={styles.gridItemText}>Consultorios</Text>
                     </TouchableOpacity>
 
-                    {/* Casilla de Eps */}
                     <TouchableOpacity
                         style={styles.gridItem}
                         onPress={() => navigateToFlow('EpsFlow')}
@@ -62,7 +62,6 @@ export default function Inicio() {
                         <Text style={styles.gridItemText}>Eps</Text>
                     </TouchableOpacity>
 
-                    {/* Casilla de Especialidades */}
                     <TouchableOpacity
                         style={styles.gridItem}
                         onPress={() => navigateToFlow('EspecialidadesFlow')}
@@ -70,7 +69,7 @@ export default function Inicio() {
                         <MaterialCommunityIcons name="professional-hexagon" size={24} color="red" />
                         <Text style={styles.gridItemText}>Especialidades</Text>
                     </TouchableOpacity>
-                    {/* Casilla de Medicos */}
+
                     <TouchableOpacity
                         style={styles.gridItem}
                         onPress={() => navigateToFlow('MedicosFlow')}
@@ -78,7 +77,7 @@ export default function Inicio() {
                         <Fontisto name="doctor" size={24} color="lightblue" />
                         <Text style={styles.gridItemText}>Medicos</Text>
                     </TouchableOpacity>
-                    {/* Casilla de Pacientes */}
+
                     <TouchableOpacity
                         style={styles.gridItem}
                         onPress={() => navigateToFlow('PacientesFlow')}
@@ -86,7 +85,7 @@ export default function Inicio() {
                         <FontAwesome6 name="people-group" size={24} color="brown" />
                         <Text style={styles.gridItemText}>Pacientes</Text>
                     </TouchableOpacity>
-                    {/* Casilla de Sedes */}
+
                     <TouchableOpacity
                         style={styles.gridItem}
                         onPress={() => navigateToFlow('SedesFlow')}
@@ -104,59 +103,61 @@ export default function Inicio() {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#f0f2f5', // Un fondo gris claro para toda la pantalla
+        backgroundColor: '#f0f2f5',
     },
     container: {
         flex: 1,
-        backgroundColor: '#f0f2f5', // Asegura que el fondo sea consistente
-        padding: 20, // Padding general para el contenido
+        backgroundColor: '#f0f2f5',
+        padding: CONTAINER_HORIZONTAL_PADDING,
+    },
+    scrollViewContent: {
+        paddingBottom: 80,
     },
     header: {
         alignItems: 'center',
-        marginBottom: 40, // Más espacio debajo del encabezado
-        marginTop: 20, // Espacio superior para el encabezado
+        marginBottom: 40,
+        marginTop: 20,
     },
     headerTitle: {
-        fontSize: 32, // Tamaño de fuente más grande para el título
-        fontWeight: '800', // Más negrita
-        color: '#333', // Color de texto oscuro
+        fontSize: 32,
+        fontWeight: '800',
+        color: '#333',
         marginBottom: 5,
     },
     headerSubtitle: {
         fontSize: 18,
-        color: '#666', // Color de texto gris medio
+        color: '#666',
     },
     statusText: {
         fontWeight: 'bold',
-        color: '#28a745', // Un verde brillante para "Habilitado"
+        color: '#28a745',
     },
     gridContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-around', // Distribuye los ítems uniformemente
-        paddingHorizontal: 5, // Pequeño padding horizontal
+        justifyContent: 'space-around',
+        paddingHorizontal: GRID_CONTAINER_HORIZONTAL_PADDING,
     },
     gridItem: {
-        width: itemWidth, // Ancho calculado para 2 ítems por fila
-        height: itemWidth, // Para hacerlo cuadrado
-        backgroundColor: '#ffffff', // Fondo blanco para las casillas
-        borderRadius: 15, // Bordes más redondeados
-        marginVertical: 10, // Margen vertical entre filas
+        width: itemWidth,
+        height: itemWidth,
+        backgroundColor: '#ffffff',
+        borderRadius: 15,
+        marginVertical: 10,
+        marginHorizontal: GRID_ITEM_HORIZONTAL_MARGIN,
         alignItems: 'center',
         justifyContent: 'center',
-        // Sombras para Android
         elevation: 8,
-        // Sombras para iOS
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 6,
     },
     gridItemText: {
-        marginTop: 15, // Más espacio entre el icono y el texto
-        fontSize: 17, // Tamaño de fuente ligeramente más grande
-        fontWeight: '600', // Negrita media
-        color: '#444', // Color de texto oscuro
+        marginTop: 15,
+        fontSize: 17,
+        fontWeight: '600',
+        color: '#444',
         textAlign: 'center',
     },
 });
