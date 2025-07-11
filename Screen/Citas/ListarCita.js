@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import CitaCard from '../../components/CitaCard';
@@ -9,6 +9,8 @@ import { listarMedicos } from "../../Src/Servicios/MedicoService";
 import { listarPacientes } from "../../Src/Servicios/PacienteService"; // Asume que tienes un PacienteService
 import { listarConsultorios } from "../../Src/Servicios/ConsultorioService";
 import { listarEps } from "../../Src/Servicios/EpsService"; // Asume que tienes un EpsService
+
+import styles from "../../Styles/ListarCitaStyles";
 
 export default function ListarCita (){
     const [citas, setCitas] = useState([]);
@@ -200,75 +202,3 @@ export default function ListarCita (){
     )
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#EBF5FB',
-        paddingHorizontal: 15,
-        paddingTop: 15,
-    },
-    centeredContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#EBF5FB',
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#555',
-        fontWeight: '500',
-    },
-    emptyListContainer: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 50,
-    },
-    emptyText: {
-        fontSize: 18,
-        color: '#7F8C8D',
-        textAlign: 'center',
-        marginTop: 15,
-        lineHeight: 25,
-    },
-    flatListContent: {
-        paddingBottom: 20,
-    },
-    flatListEmpty: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    botonCrear: {
-        backgroundColor: '#28A745',
-        paddingVertical: 14,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        alignSelf: 'center',
-        width: '90%',
-        marginBottom: 20,
-        marginTop: 10,
-        shadowColor: "#28A745",
-        shadowOffset: {
-            width: 0,
-            height: 6,
-        },
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-        elevation: 12,
-    },
-    botonCrearContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    botonCrearIcon: {
-        marginRight: 10,
-    },
-    textoBotonCrear: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '700',
-    },
-});

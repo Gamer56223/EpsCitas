@@ -6,6 +6,8 @@ import EspecialidadCard from "../../components/EspecialidadCard";
 import { useNavigation } from "@react-navigation/native";
 import { listarEspecialidades, eliminarEspecialidad } from "../../Src/Servicios/EspecialidadService";
 
+import styles from "../../Styles/ListarEspecialidadStyles";
+
 export default function ListarEspecialidad (){
     const [especialidades, setEspecialidades] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -110,75 +112,3 @@ export default function ListarEspecialidad (){
     )
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#EBF5FB', // Fondo suave
-        paddingHorizontal: 15,
-        paddingTop: 15,
-    },
-    centeredContainer: { // Renombrado para mayor claridad
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#EBF5FB',
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#555',
-        fontWeight: '500',
-    },
-    emptyListContainer: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 50,
-    },
-    emptyText: {
-        fontSize: 18,
-        color: '#7F8C8D',
-        textAlign: 'center',
-        marginTop: 15,
-        lineHeight: 25,
-    },
-    flatListContent: {
-        paddingBottom: 20, // Espacio al final de la lista si hay elementos
-    },
-    flatListEmpty: {
-        flex: 1, // Asegura que el contenido se centre verticalmente cuando la lista está vacía
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    botonCrear: {
-        backgroundColor: '#28A745', // Un verde más amigable y moderno
-        paddingVertical: 14,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        alignSelf: 'center',
-        width: '90%',
-        marginBottom: 20,
-        marginTop: 10,
-        shadowColor: "#28A745",
-        shadowOffset: {
-            width: 0,
-            height: 6,
-        },
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-        elevation: 12,
-    },
-    botonCrearContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    botonCrearIcon: {
-        marginRight: 10,
-    },
-    textoBotonCrear: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '700',
-    },
-});

@@ -23,14 +23,15 @@ export default function AppNavegacion() {
         }
     };
 
-    // Función que se pasará a los componentes hijos para forzar la actualización del token
+    // FUNCIÓN CLAVE: Esta función se pasará a los componentes hijos (LoginScreen)
+    // para permitirles actualizar el estado del token en AppNavegacion.
     const updateUserToken = async (newToken) => {
         if (newToken === null) {
             await AsyncStorage.removeItem("userToken");
         } else {
             await AsyncStorage.setItem("userToken", newToken);
         }
-        setUserToken(newToken); // Actualiza el estado para que AppNavegacion re-renderice
+        setUserToken(newToken); // Esto hará que AppNavegacion se re-renderice
     };
 
     useEffect(() => {
@@ -61,8 +62,12 @@ export default function AppNavegacion() {
 
     return (
         <NavigationContainer>
-            {/* Pasamos updateUserToken como prop a NavegacionPrincipal */}
-            {userToken ? <NavegacionPrincipal updateUserToken={updateUserToken} /> : <AuthNavegacion/>}
+            {/* Pasamos updateUserToken como prop a NavegacionPrincipal y AuthNavegacion */}
+            {userToken ? 
+                <NavegacionPrincipal updateUserToken={updateUserToken} /> 
+                : 
+                <AuthNavegacion updateUserToken={updateUserToken} />
+            }
         </NavigationContainer>
     );
 }

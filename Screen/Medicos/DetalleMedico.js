@@ -4,6 +4,8 @@ import BotonComponent from "../../components/BottonComponent";
 import { listarMedicos } from "../../Src/Servicios/MedicoService";
 import { listarEspecialidades } from "../../Src/Servicios/EspecialidadService"; // Necesitas esto para mostrar el nombre de la especialidad
 
+import styles from "../../Styles/DetalleMedicoStyles";
+
 export default function DetalleMedico({ route, navigation }) {
     const { medicoId } = route.params;
 
@@ -102,69 +104,3 @@ export default function DetalleMedico({ route, navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: "bold",
-        marginBottom: 25,
-        textAlign: 'center',
-    },
-    detailCard: {
-        width: "100%",
-        maxWidth: 400,
-        padding: 25,
-        borderRadius: 15,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 8,
-        alignItems: "flex-start",
-        marginBottom: 20,
-    },
-    medicoName: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 15,
-        textAlign: 'center',
-        width: '100%',
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: '#ccc',
-        paddingBottom: 10,
-    },
-    detailText: {
-        fontSize: 18,
-        marginBottom: 8,
-        width: '100%',
-    },
-    detailLabel: {
-        fontWeight: 'bold',
-    },
-    errorText: {
-        fontSize: 18,
-        color: 'red',
-        textAlign: 'center',
-        marginBottom: 20,
-        width: '100%',
-    },
-    backButton: {
-        backgroundColor: "#007B8C",
-        paddingVertical: 12,
-        paddingHorizontal: 25,
-        borderRadius: 8,
-        marginTop: 15,
-        width: '80%',
-        maxWidth: 300,
-        alignSelf: 'center',
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        fontSize: 16,
-    },
-});
