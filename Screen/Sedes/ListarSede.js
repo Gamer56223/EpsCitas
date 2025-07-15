@@ -1,9 +1,11 @@
-import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import SedeCard from "../../components/SedeCard"; // Asegúrate de que la ruta sea correcta
 import { useNavigation } from "@react-navigation/native";
 import { listarSedes, eliminarSede } from "../../Src/Servicios/SedeService";
+
+import styles from '../../Styles/ListarSedeStyles'; // Asegúrate de que la ruta sea correcta
 
 export default function ListarSede() {
     const [sedes, setSedes] = useState([]);
@@ -20,13 +22,14 @@ export default function ListarSede() {
                 Alert.alert("Error", result.message || "No se pudieron cargar las sedes");
             }
         } catch (error) {
-            console.error("Error al cargar sedes:", error); // Añadir log para depuración
-            Alert.alert("Error", "Ocurrió un error al cargar las sedes."); // Mensaje más genérico para el usuario
+            console.error("Error al cargar sedes:", error);
+            Alert.alert("Error", "Ocurrió un error al cargar las sedes.");
         } finally {
             setLoading(false);
         }
     };
 
+    // Recargar sedes cada vez que la pantalla se enfoca
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', handleSedes);
         return unsubscribe;
@@ -34,7 +37,7 @@ export default function ListarSede() {
 
     const handleEliminar = (id) => {
         Alert.alert(
-            "Eliminar Sede",
+            "Confirmar Eliminación", // Título más claro
             "¿Estás seguro de que deseas eliminar esta sede?",
             [
                 { text: "Cancelar", style: "cancel" },
@@ -52,7 +55,7 @@ export default function ListarSede() {
                                 Alert.alert("Error", result.message || "No se pudo eliminar la Sede");
                             }
                         } catch (error) {
-                            console.error("Error al eliminar sede:", error); // Añadir log
+                            console.error("Error al eliminar sede:", error);
                             Alert.alert("Error", "No se pudo eliminar la sede.");
                         }
                     },
@@ -68,7 +71,7 @@ export default function ListarSede() {
     if (loading) {
         return (
             <View style={styles.centeredContainer}>
-                <ActivityIndicator size="large" color="#1976D2" />
+                <ActivityIndicator size="large" color="#007BFF" />
                 <Text style={styles.loadingText}>Cargando sedes...</Text>
             </View>
         );
@@ -89,7 +92,15 @@ export default function ListarSede() {
     );
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.fullScreenContainer}>
+            <StatusBar barStyle="dark-content" backgroundColor="#F5F8FA" />
+
+            {/* Nuevo encabezado */}
+            <View style={styles.headerContainer}>
+                <Ionicons name="business-outline" size={32} color="#007BFF" style={styles.headerIcon} />
+                <Text style={styles.headerTitle}>Gestión de Sedes</Text>
+            </View>
+
             <FlatList
                 data={sedes}
                 keyExtractor={(item) => item.id.toString()}
@@ -104,85 +115,12 @@ export default function ListarSede() {
                 contentContainerStyle={sedes.length === 0 ? styles.flatListEmpty : styles.flatListContent}
             />
 
-            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
+            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear} activeOpacity={0.8}>
                 <View style={styles.botonCrearContent}>
                     <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.botonCrearIcon} />
                     <Text style={styles.textoBotonCrear}>Nueva Sede</Text>
                 </View>
             </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#EBF5FB', // Fondo suave, consistente con los otros archivos
-        paddingHorizontal: 15, // Más padding horizontal
-        paddingTop: 15, // Más padding superior
-    },
-    centeredContainer: { // Renombrado para mayor claridad y consistencia
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#EBF5FB',
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#555',
-        fontWeight: '500',
-    },
-    emptyListContainer: {
-        flexGrow: 1, // Permite que el contenedor se expanda y centre su contenido
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 50, // Espacio vertical cuando no hay items
-    },
-    emptyText: {
-        fontSize: 18,
-        color: '#7F8C8D', // Un gris más oscuro
-        textAlign: 'center',
-        marginTop: 15,
-        lineHeight: 25, // Mayor espacio entre líneas
-    },
-    flatListContent: {
-        paddingBottom: 20, // Espacio al final de la lista si hay elementos
-    },
-    flatListEmpty: {
-        flex: 1, // Asegura que el contenido se centre verticalmente cuando la lista está vacía
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    botonCrear: {
-        backgroundColor: '#28A745', // Un verde más amigable y moderno
-        paddingVertical: 14,
-        paddingHorizontal: 25,
-        borderRadius: 10, // Bordes más redondeados
-        alignSelf: 'center', // Centra el botón horizontalmente
-        width: '90%', // Ocupa un buen ancho
-        marginBottom: 20, // Espacio en la parte inferior
-        marginTop: 10,
-        shadowColor: "#28A745", // Sombra a juego con el botón
-        shadowOffset: {
-            width: 0,
-            height: 6, // Sombra más pronunciada
-        },
-        shadowOpacity: 0.35, // Opacidad de la sombra
-        shadowRadius: 8, // Radio de desenfoque de la sombra
-        elevation: 12, // Elevación para Android
-    },
-    botonCrearContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    botonCrearIcon: {
-        marginRight: 10, // Espacio entre icono y texto
-    },
-    textoBotonCrear: {
-        color: '#FFFFFF',
-        fontSize: 18, // Tamaño de fuente más grande
-        fontWeight: '700', // Más negrita
-    },
-});

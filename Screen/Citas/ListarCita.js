@@ -1,16 +1,16 @@
-import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native'; // Importar SafeAreaView y StatusBar
+import React, { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import CitaCard from '../../components/CitaCard';
+import CitaCard from '../../components/CitaCard'; // Asegúrate de que la ruta sea correcta
 import { useNavigation } from "@react-navigation/native";
 import { listarCitas, eliminarCita } from "../../Src/Servicios/CitaService";
 // Importar servicios para entidades relacionadas (asumiendo que existen y tienen funciones de listar)
 import { listarMedicos } from "../../Src/Servicios/MedicoService";
-import { listarPacientes } from "../../Src/Servicios/PacienteService"; // Asume que tienes un PacienteService
+import { listarPacientes } from "../../Src/Servicios/PacienteService";
 import { listarConsultorios } from "../../Src/Servicios/ConsultorioService";
-import { listarEps } from "../../Src/Servicios/EpsService"; // Asume que tienes un EpsService
+import { listarEps } from "../../Src/Servicios/EpsService";
 
-import styles from "../../Styles/ListarCitaStyles";
+import styles from "../../Styles/ListarCitaStyles"; // Asegúrate de que la ruta sea correcta
 
 export default function ListarCita (){
     const [citas, setCitas] = useState([]);
@@ -27,62 +27,62 @@ export default function ListarCita (){
             // Cargar todas las entidades relacionadas primero
             const [medicosRes, pacientesRes, consultoriosRes, epsRes, citasRes] = await Promise.all([
                 listarMedicos(),
-                // Asume que tienes una función listarPacientes en PacienteService
-                // Si no existe, deberás crearla o ajustar esta línea
                 listarPacientes(),
                 listarConsultorios(),
-                // Asume que tienes una función listarEps en EpsService
-                // Si no existe, deberás crearla o ajustar esta línea
                 listarEps(),
                 listarCitas()
             ]);
 
             let tempMedicosMap = {};
             if (medicosRes.success) {
-                console.log("Médicos cargados:", medicosRes.data);
+                // console.log("Médicos cargados:", medicosRes.data); // Puedes descomentar para depurar
                 medicosRes.data.forEach(medico => {
                     tempMedicosMap[medico.id] = `${medico.Nombre} ${medico.Apellido}`;
                 });
                 setMedicosMap(tempMedicosMap);
             } else {
                 console.error("Error al cargar médicos:", medicosRes.message);
+                Alert.alert("Error de Carga", medicosRes.message || "No se pudieron cargar los médicos.");
             }
 
             let tempPacientesMap = {};
             if (pacientesRes.success) {
-                console.log("Pacientes cargados:", pacientesRes.data);
+                // console.log("Pacientes cargados:", pacientesRes.data); // Puedes descomentar para depurar
                 pacientesRes.data.forEach(paciente => {
                     tempPacientesMap[paciente.id] = `${paciente.Nombre} ${paciente.Apellido}`;
                 });
                 setPacientesMap(tempPacientesMap);
             } else {
                 console.error("Error al cargar pacientes:", pacientesRes.message);
+                Alert.alert("Error de Carga", pacientesRes.message || "No se pudieron cargar los pacientes.");
             }
 
             let tempConsultoriosMap = {};
             if (consultoriosRes.success) {
-                console.log("Consultorios cargados:", consultoriosRes.data);
+                // console.log("Consultorios cargados:", consultoriosRes.data); // Puedes descomentar para depurar
                 consultoriosRes.data.forEach(consultorio => {
                     tempConsultoriosMap[consultorio.id] = consultorio.Nombre;
                 });
                 setConsultoriosMap(tempConsultoriosMap);
             } else {
                 console.error("Error al cargar consultorios:", consultoriosRes.message);
+                Alert.alert("Error de Carga", consultoriosRes.message || "No se pudieron cargar los consultorios.");
             }
 
             let tempEpsMap = {};
             if (epsRes.success) {
-                console.log("EPS cargadas:", epsRes.data);
+                // console.log("EPS cargadas:", epsRes.data); // Puedes descomentar para depurar
                 epsRes.data.forEach(epsItem => {
                     tempEpsMap[epsItem.id] = epsItem.Nombre;
                 });
                 setEpsMap(tempEpsMap);
             } else {
                 console.error("Error al cargar EPS:", epsRes.message);
+                Alert.alert("Error de Carga", epsRes.message || "No se pudieron cargar las EPS.");
             }
 
             if (citasRes.success) {
-                console.log("Citas cargadas:", citasRes.data);
+                // console.log("Citas cargadas:", citasRes.data); // Puedes descomentar para depurar
                 const enrichedCitas = citasRes.data.map(citaItem => {
                     // *** IMPORTANTE: AJUSTA ESTAS CLAVES (idMedico, idPaciente, etc.)
                     // SI NO COINCIDEN CON LOS NOMBRES REALES EN TU TABLA DE CITAS EN LARAVEL ***
@@ -90,11 +90,6 @@ export default function ListarCita (){
                     const nombrePaciente = tempPacientesMap[citaItem.idPaciente] || 'Paciente Desconocido';
                     const nombreConsultorio = tempConsultoriosMap[citaItem.idConsultorio] || 'Consultorio Desconocido';
                     const nombreEps = tempEpsMap[citaItem.idEps] || 'EPS Desconocida';
-
-                    console.log(`Cita ID: ${citaItem.id}, idMedico: ${citaItem.idMedico}, Nombre Médico: ${nombreMedico}`);
-                    console.log(`Cita ID: ${citaItem.id}, idPaciente: ${citaItem.idPaciente}, Nombre Paciente: ${nombrePaciente}`);
-                    console.log(`Cita ID: ${citaItem.id}, idConsultorio: ${citaItem.idConsultorio}, Nombre Consultorio: ${nombreConsultorio}`);
-                    console.log(`Cita ID: ${citaItem.id}, idEps: ${citaItem.idEps}, Nombre EPS: ${nombreEps}`);
 
                     return {
                         ...citaItem,
@@ -116,6 +111,7 @@ export default function ListarCita (){
         }
     };
 
+    // Recargar citas cada vez que la pantalla se enfoca
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', handleCitas);
         return unsubscribe;
@@ -135,7 +131,7 @@ export default function ListarCita (){
                             const result = await eliminarCita(id);
                             if (result.success) {
                                 Alert.alert("Éxito", "Cita eliminada correctamente.");
-                                handleCitas();
+                                handleCitas(); // Recargar la lista
                             } else {
                                 Alert.alert("Error", result.message || "No se pudo eliminar la cita.");
                             }
@@ -146,16 +142,22 @@ export default function ListarCita (){
                     },
                 },
             ]
-        )
-    }
+        );
+    };
 
     const handleCrear = () => {
-        navigation.navigate('CrearCita');
+        navigation.navigate('CrearCita'); // Asegúrate de que 'CrearCita' sea el nombre de tu ruta en CitasStack.js
     };
 
     const handleEditar = (cita) => {
-        navigation.navigate("EditarCitas", {cita});
-    }
+        navigation.navigate("EditarCitas", {cita}); // Asegúrate de que 'EditarCitas' sea el nombre de tu ruta en CitasStack.js
+    };
+
+    // *** NUEVA FUNCIÓN: handleDetalle para navegar a la pantalla de detalles ***
+    const handleDetalle = (citaId) => {
+        navigation.navigate("DetalleCitas", { citaId: citaId }); // Asegúrate de que 'DetalleCitas' sea el nombre de tu ruta en CitasStack.js
+    };
+
 
     if (loading) {
         return (
@@ -167,7 +169,16 @@ export default function ListarCita (){
     }
 
     return (
-        <View style={styles.container}>
+        // Usar SafeAreaView y StatusBar para mejor experiencia de usuario
+        <SafeAreaView style={styles.fullScreenContainer}>
+            <StatusBar barStyle="dark-content" backgroundColor="#F5F8FA" />
+
+            {/* Nuevo encabezado */}
+            <View style={styles.headerContainer}>
+                <Ionicons name="calendar-outline" size={32} color="#007BFF" style={styles.headerIcon} />
+                <Text style={styles.headerTitle}>Gestión de Citas</Text>
+            </View>
+
             <FlatList
                 data={citas}
                 keyExtractor={(item) => item.id.toString()}
@@ -178,8 +189,9 @@ export default function ListarCita (){
                         nombrePaciente={item.nombrePaciente}
                         nombreConsultorio={item.nombreConsultorio}
                         nombreEps={item.nombreEps}
-                        onEdit={() => handleEditar (item)}
-                        onDelete={() => handleEliminar (item.id)}
+                        onEdit={() => handleEditar(item)}
+                        onDelete={() => handleEliminar(item.id)}
+                        onDetail={() => handleDetalle(item.id)} // Pasando la nueva función al CitaCard
                     />
                 )}
                 ListEmptyComponent = {
@@ -192,13 +204,12 @@ export default function ListarCita (){
                 contentContainerStyle={citas.length === 0 ? styles.flatListEmpty : styles.flatListContent}
             />
 
-            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
+            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear} activeOpacity={0.8}>
                 <View style={styles.botonCrearContent}>
                     <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.botonCrearIcon} />
                     <Text style={styles.textoBotonCrear}>Nueva Cita</Text>
                 </View>
             </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     )
 }
-

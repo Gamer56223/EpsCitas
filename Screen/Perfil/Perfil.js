@@ -1,33 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, Alert, SafeAreaView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import BottonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
-import { CommonActions } from '@react-navigation/native'; // Importa CommonActions
+import BottonComponent from "../../components/BottonComponent";
+import { CommonActions } from '@react-navigation/native';
 
-import api from "../../Src/Servicios/conexion";
-import { logoutUser } from "../../Src/Servicios/AuthService"; 
+import api from "../../Src/Servicios/conexion"; // Importa la instancia de Axios configurada
+import { logoutUser } from "../../Src/Servicios/AuthService"; // Servicio para cerrar sesión
 
+import styles from "../../Styles/PerfilStyles"; // Estilos para la pantalla de perfil
 
-// PantallaPerfil ahora acepta updateUserToken como prop
+/**
+ * PantallaPerfil: Componente de pantalla que muestra la información del perfil del usuario logueado.
+ * Permite ver los detalles del usuario y cerrar la sesión.
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.navigation - Objeto de navegación de React Navigation.
+ * @param {function} props.updateUserToken - Función pasada desde el componente padre (ej. AppNavegacion)
+ * para actualizar el token de autenticación global (ej. a `null` al cerrar sesión).
+ */
 export default function PantallaPerfil({ navigation, updateUserToken }) {
+    // Estado para almacenar la información del usuario
     const [usuario, setUsuario] = useState(null);
+    // Estado para controlar el indicador de carga
     const [loading, setLoading] = useState(true);
 
+    // useEffect para cargar el perfil del usuario cuando el componente se monta o cuando `updateUserToken` cambia.
     useEffect(() => {
         const cargarPerfil = async () => {
             try {
+                // Intenta obtener el token del almacenamiento local
                 const token = await AsyncStorage.getItem("userToken");
                 if (!token) {
-                    // Si no hay token, forzamos el logout a través de AppNavegacion
+                    // Si no hay token, asume que el usuario no está autenticado o el token expiró/fue limpiado.
+                    // Fuerza un logout a través de `updateUserToken` para redirigir a la pantalla de inicio de sesión.
                     updateUserToken(null);
                     return;
                 }
 
+                // Realiza una solicitud GET a la ruta `/me` para obtener la información del usuario actual.
                 const response = await api.get("/me");
-                setUsuario(response.data);
+                setUsuario(response.data); // Almacena los datos del usuario en el estado
             } catch (error) {
                 console.error("Error al cargar el perfil:", error);
                 if (error.response) {
+                    // Si hay una respuesta del servidor (error HTTP)
                     Alert.alert(
                         "Error del servidor",
                         `Error ${error.response.status}: ${error.response.data?.message || "No se pudo cargar el perfil"}`,
@@ -35,8 +51,8 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
                             {
                                 text: "OK",
                                 onPress: async () => {
+                                    // Si el error es 401 (No autorizado), fuerza el logout.
                                     if (error.response.status === 401) {
-                                        // Si es un 401, forzamos el logout a través de AppNavegacion
                                         updateUserToken(null);
                                     }
                                 }
@@ -44,6 +60,7 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
                         ]
                     );
                 } else if (error.request) {
+                    // Si no hay respuesta del servidor (problema de red)
                     Alert.alert(
                         "Error de conexión",
                         "No se pudo conectar con el servidor. Verifica tu conexión a internet.",
@@ -51,13 +68,14 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
                             {
                                 text: "OK",
                                 onPress: async () => {
-                                    // Si hay error de conexión, forzamos el logout a través de AppNavegacion
+                                    // Si hay error de conexión, fuerza el logout para intentar de nuevo la autenticación.
                                     updateUserToken(null);
                                 }
                             }
                         ]
                     );
                 } else {
+                    // Otros errores inesperados
                     Alert.alert(
                         "Error",
                         "Ocurrió un error inesperado al cargar el perfil.",
@@ -65,7 +83,7 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
                             {
                                 text: "OK",
                                 onPress: async () => {
-                                    // Para cualquier otro error inesperado, forzamos el logout
+                                    // Para cualquier otro error, fuerza el logout.
                                     updateUserToken(null);
                                 }
                             }
@@ -73,19 +91,24 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
                     );
                 }
             } finally {
-                setLoading(false);
+                setLoading(false); // Desactiva el indicador de carga, independientemente del resultado.
             }
         };
         cargarPerfil();
-    }, [updateUserToken]); // Añadir updateUserToken a las dependencias para que useEffect se re-ejecute si cambia
+    }, [updateUserToken]); // Dependencia: el efecto se re-ejecuta si `updateUserToken` cambia.
 
+    /**
+     * handleLogout: Función asíncrona para manejar el cierre de sesión del usuario.
+     * Llama al servicio `logoutUser` y, si es exitoso, actualiza el token global a `null`.
+     */
     const handleLogout = async () => {
         try {
-            const result = await logoutUser();
+            const result = await logoutUser(); // Llama al servicio de logout.
             if (result.success) {
                 Alert.alert("Sesión Cerrada", "Has cerrado sesión exitosamente.");
-                // Llamamos a la función pasada desde AppNavegacion para actualizar el token a null
-                updateUserToken(null); 
+                // Llama a la función `updateUserToken` pasada desde AppNavegacion
+                // para indicar que el usuario ya no está autenticado.
+                updateUserToken(null);
             } else {
                 Alert.alert("Error al cerrar sesión", result.message || "No se pudo cerrar la sesión.");
             }
@@ -95,7 +118,7 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
         }
     };
 
-
+    // Muestra un indicador de carga mientras se está obteniendo la información del perfil.
     if (loading) {
         return (
             <View style={styles.container}>
@@ -105,6 +128,8 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
         );
     }
 
+    // Si no se pudo cargar el usuario (ej. token inválido, error de conexión),
+    // muestra un mensaje de error y un botón para ir a iniciar sesión.
     if (!usuario) {
         return (
             <SafeAreaView style={styles.container}>
@@ -112,14 +137,15 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
                 <View style={styles.containerPerfil}>
                     <Text style={styles.errorText}>
                         No se pudo cargar la información del perfil.
-                    </Text>
+                    </Text>                    
                     <BottonComponent
                         title="Ir a Iniciar Sesión"
                         onPress={async () => {
                             // Al hacer clic, también forzamos el logout a través de AppNavegacion
+                            // para asegurar que el estado de autenticación se limpie completamente.
                             updateUserToken(null);
                         }}
-                        buttonStyle={styles.loginButton} // Estilo para el botón de ir a Login
+                        buttonStyle={styles.loginButton} // Estilo específico para el botón de ir a Login
                         textStyle={styles.buttonText}
                     />
                 </View>
@@ -127,15 +153,29 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
         );
     }
 
+    // Si el perfil se cargó exitosamente, muestra los detalles del usuario.
     return (
         <SafeAreaView style={styles.container}>
             <Text style={styles.title}>Mi Perfil</Text>
             <View style={styles.containerPerfil}>
-                <Text style={styles.profileText}><Text style={styles.detailLabel}>Nombre: </Text>{usuario.user?.name || "No disponible"}</Text>
-                <Text style={styles.profileText}><Text style={styles.detailLabel}>Email: </Text>{usuario.user?.email || "No disponible"}</Text>
-                <Text style={styles.profileText}><Text style={styles.detailLabel}>Rol: </Text>{usuario.user?.role || "No disponible"}</Text>
+                <Text style={styles.profileText}>
+                    <Text style={styles.detailLabel}>Nombre: </Text>
+                    {usuario.user?.name || "No disponible"}
+                </Text>
+                <Text style={styles.profileText}>
+                    <Text style={styles.detailLabel}>Email: </Text>
+                    {usuario.user?.email || "No disponible"}
+                </Text>
+                <Text style={styles.profileText}>
+                    <Text style={styles.detailLabel}>Rol: </Text>
+                    {usuario.user?.role || "No disponible"}
+                </Text>
+                {/* Muestra el teléfono solo si está disponible */}
                 {usuario.user?.telefono && (
-                    <Text style={styles.profileText}><Text style={styles.detailLabel}>Teléfono: </Text>{usuario.user.telefono}</Text>
+                    <Text style={styles.profileText}>
+                        <Text style={styles.detailLabel}>Teléfono: </Text>
+                        {usuario.user.telefono}
+                    </Text>
                 )}
 
                 <View style={styles.profileButtonContainer}>
@@ -156,109 +196,3 @@ export default function PantallaPerfil({ navigation, updateUserToken }) {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#E0F2F7", // Fondo más suave y azul claro
-        padding: 20,
-    },
-    title: {
-        fontSize: 32, // Título más grande
-        fontWeight: "bold",
-        marginBottom: 35, // Mayor margen inferior
-        color: "#007B8C", // Color azul oscuro para el título
-        textShadowColor: 'rgba(0, 0, 0, 0.1)', // Sombra sutil en el texto
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
-    },
-    containerPerfil: {
-        width: "100%",
-        maxWidth: 400,
-        padding: 30, // Mayor padding interno
-        backgroundColor: "#FFFFFF", // Fondo blanco limpio
-        borderRadius: 20, // Esquinas más redondeadas
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 6 }, // Sombra más pronunciada
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 12, // Elevación para Android
-        alignItems: "flex-start",
-    },
-    profileText: {
-        fontSize: 18,
-        marginBottom: 10, // Espacio entre líneas de texto
-        color: "#333", // Color de texto más oscuro para mayor legibilidad
-        width: "100%",
-        borderBottomWidth: StyleSheet.hairlineWidth, // Línea sutil en la parte inferior
-        borderBottomColor: "#E0E0E0", // Color de línea más claro
-        paddingBottom: 8,
-        paddingTop: 5, // Pequeño padding superior para la línea
-    },
-    detailLabel: {
-        fontWeight: 'bold', 
-        color: "#1C2E4A", 
-    },
-    errorText: {
-        fontSize: 16,
-        color: "#D32F2F", // Rojo más fuerte para errores
-        textAlign: "center",
-        marginBottom: 20,
-        width: "100%",
-        fontWeight: 'bold',
-    },
-    profileButtonContainer: {
-        marginTop: 30, 
-        width: '100%',
-        alignItems: 'center', 
-    },
-    editProfileButton: {
-        backgroundColor: "#007B8C", 
-        paddingVertical: 14,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        marginTop: 15,
-        width: '90%', // Ancho del botón
-        alignSelf: 'center', 
-        shadowColor: "#000", 
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    logoutButton: {
-        backgroundColor: "#DC3545", // Rojo vibrante para "Cerrar Sesión"
-        paddingVertical: 14,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        marginTop: 15,
-        width: '90%', // Ancho del botón
-        alignSelf: 'center', // Centrar el botón
-        shadowColor: "#000", // Sombra para los botones
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    loginButton: { 
-        backgroundColor: "#6C757D", // Gris oscuro
-        paddingVertical: 14,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        marginTop: 20,
-        width: '90%',
-        alignSelf: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    buttonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        fontSize: 18, // Texto de botón más grande
-    },
-});

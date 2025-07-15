@@ -38,7 +38,8 @@ export default function Inicio() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="dark-content" backgroundColor="#f0f2f5" />
+            {/* Sets the status bar style for better visibility */}
+            <StatusBar barStyle="dark-content" backgroundColor="#F0F4F8" /> 
 
             <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContent}>
                 <View style={styles.header}>
@@ -68,11 +69,13 @@ export default function Inicio() {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#f0f2f5',
+        // Changed background color to a light, harmonious shade
+        backgroundColor: '#F0F4F8', 
     },
     container: {
         flex: 1,
-        backgroundColor: '#f0f2f5',
+        // Changed background color to a light, harmonious shade
+        backgroundColor: '#F0F4F8', 
         padding: CONTAINER_HORIZONTAL_PADDING,
     },
     scrollViewContent: {

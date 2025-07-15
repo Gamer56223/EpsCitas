@@ -1,19 +1,35 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react'; // Importar React para React.memo
+import React from 'react';
 
+import styles from '../Styles/SedeCardStyles';
+
+/**
+ * SedeCard: Componente para mostrar la información de una sede.
+ * Muestra el nombre, dirección y teléfono de la sede, junto con botones para editar o eliminar.
+ *
+ * @param {object} props - Propiedades del componente.
+ * @param {object} props.sede - Objeto con los datos de la sede (Nombre, Direccion, Telefono).
+ * @param {function} props.onEdit - Función a ejecutar al presionar el botón de editar.
+ * @param {function} props.onDelete - Función a ejecutar al presionar el botón de eliminar.
+ */
 function SedeCard({ sede, onEdit, onDelete }) {
     return (
         <View style={styles.card}>
             <View style={styles.info}>
+                {/* Muestra el nombre de la sede */}
                 <Text style={styles.nombre}>{sede.Nombre}</Text>
+                {/* Muestra la dirección de la sede */}
                 <Text style={styles.detalle}><Text style={styles.detalleLabel}>Dirección:</Text> {sede.Direccion}</Text>
+                {/* Muestra el teléfono de la sede */}
                 <Text style={styles.detalle}><Text style={styles.detalleLabel}>Teléfono:</Text> {sede.Telefono}</Text>
             </View>
             <View style={styles.actions}>
+                {/* Botón para editar la sede con ícono de Ionicons */}
                 <TouchableOpacity onPress={onEdit} style={styles.iconBtn}>
                     <Ionicons name="create-outline" size={26} color="#1976D2" />
                 </TouchableOpacity>
+                {/* Botón para eliminar la sede con ícono de Ionicons */}
                 <TouchableOpacity onPress={onDelete} style={styles.iconBtn}>
                     <Ionicons name="trash-outline" size={26} color="#D32F2F" />
                 </TouchableOpacity>
@@ -22,59 +38,6 @@ function SedeCard({ sede, onEdit, onDelete }) {
     );
 }
 
-export default React.memo(SedeCard); // Usar React.memo para optimización
-
-const styles = StyleSheet.create({
-    card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 20,
-        marginVertical: 10,
-        marginHorizontal: 15,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 8,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-    },
-    info: {
-        flex: 1,
-        marginRight: 15,
-    },
-    nombre: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333333',
-        marginBottom: 8,
-    },
-    detalle: {
-        fontSize: 15,
-        color: '#555555',
-        lineHeight: 22,
-    },
-    detalleLabel: {
-        fontWeight: '600',
-        color: '#444444',
-    },
-    actions: {
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    iconBtn: {
-        padding: 8,
-        borderRadius: 20,
-        backgroundColor: '#F0F0F0',
-        marginVertical: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 3,
-    },
-});
+// React.memo optimiza el rendimiento, evitando re-renders innecesarios
+// si las props del componente no han cambiado.
+export default React.memo(SedeCard);

@@ -1,9 +1,11 @@
-import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import PacienteCard from '../../components/PacienteCard';
+import PacienteCard from '../../components/PacienteCard'; // Asegúrate de que la ruta sea correcta
 import { useNavigation } from "@react-navigation/native";
 import { listarPacientes, eliminarPaciente } from "../../Src/Servicios/PacienteService";
+
+import styles from '../../Styles/ListarPacienteStyles'; // Asegúrate de que la ruta sea correcta
 
 export default function ListarPaciente() {
     const [pacientes, setPacientes] = useState([]);
@@ -27,6 +29,7 @@ export default function ListarPaciente() {
         }
     };
 
+    // Recargar pacientes cada vez que la pantalla se enfoca
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', handlePacientes);
         return unsubscribe;
@@ -34,7 +37,7 @@ export default function ListarPaciente() {
 
     const handleEliminar = (id) => {
         Alert.alert(
-            "Confirmar Eliminación", // Título más claro
+            "Confirmar Eliminación",
             "¿Estás seguro de que deseas eliminar este paciente?",
             [
                 { text: "Cancelar", style: "cancel" },
@@ -72,7 +75,7 @@ export default function ListarPaciente() {
     if (loading) {
         return (
             <View style={styles.centeredContainer}>
-                <ActivityIndicator size="large" color="#1976D2" />
+                <ActivityIndicator size="large" color="#007BFF" />
                 <Text style={styles.loadingText}>Cargando pacientes...</Text>
             </View>
         );
@@ -88,7 +91,15 @@ export default function ListarPaciente() {
     );
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.fullScreenContainer}>
+            <StatusBar barStyle="dark-content" backgroundColor="#F5F8FA" />
+
+            {/* Nuevo encabezado */}
+            <View style={styles.headerContainer}>
+                <Ionicons name="body-outline" size={32} color="#007BFF" style={styles.headerIcon} />
+                <Text style={styles.headerTitle}>Gestión de Pacientes</Text>
+            </View>
+
             <FlatList
                 data={pacientes}
                 keyExtractor={(item) => item.id.toString()}
@@ -103,85 +114,12 @@ export default function ListarPaciente() {
                 contentContainerStyle={pacientes.length === 0 ? styles.flatListEmpty : styles.flatListContent}
             />
 
-            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear}>
+            <TouchableOpacity style={styles.botonCrear} onPress={handleCrear} activeOpacity={0.8}>
                 <View style={styles.botonCrearContent}>
                     <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.botonCrearIcon} />
                     <Text style={styles.textoBotonCrear}>Nuevo Paciente</Text>
                 </View>
             </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#EBF5FB', // Fondo suave
-        paddingHorizontal: 15,
-        paddingTop: 15,
-    },
-    centeredContainer: { // Renombrado para mayor claridad
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#EBF5FB',
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#555',
-        fontWeight: '500',
-    },
-    emptyListContainer: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 50,
-    },
-    emptyText: {
-        fontSize: 18,
-        color: '#7F8C8D',
-        textAlign: 'center',
-        marginTop: 15,
-        lineHeight: 25,
-    },
-    flatListContent: {
-        paddingBottom: 20, // Espacio al final de la lista si hay elementos
-    },
-    flatListEmpty: {
-        flex: 1, // Asegura que el contenido se centre verticalmente cuando la lista está vacía
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    botonCrear: {
-        backgroundColor: '#28A745', // Un verde más amigable y moderno
-        paddingVertical: 14,
-        paddingHorizontal: 25,
-        borderRadius: 10,
-        alignSelf: 'center',
-        width: '90%',
-        marginBottom: 20,
-        marginTop: 10,
-        shadowColor: "#28A745",
-        shadowOffset: {
-            width: 0,
-            height: 6,
-        },
-        shadowOpacity: 0.35,
-        shadowRadius: 8,
-        elevation: 12,
-    },
-    botonCrearContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    botonCrearIcon: {
-        marginRight: 10,
-    },
-    textoBotonCrear: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: '700',
-    },
-});
