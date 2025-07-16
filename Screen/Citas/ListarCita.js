@@ -143,11 +143,11 @@ export default function ListarCita (){
     };
 
     const handleCrear = () => {
-        navigation.navigate('CrearCita'); // Asegúrate de que 'CrearCita' sea el nombre de tu ruta en CitasStack.js
+        navigation.navigate('CrearCita'); 
     };
 
     const handleEditar = (cita) => {
-        navigation.navigate("EditarCitas", {cita}); // Asegúrate de que 'EditarCitas' sea el nombre de tu ruta en CitasStack.js
+        navigation.navigate("EditarCitas", {cita}); // 'EditarCitas' ruta en CitasStack.js
     };
 
 
