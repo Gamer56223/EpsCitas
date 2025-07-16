@@ -1,9 +1,10 @@
+// Ruta: Src/Navigation/Stacks/CitasStack.js
+
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
 // Importa las pantallas relacionadas con las citas
 import ListarCita from "../../../Screen/Citas/ListarCita";
-import DetalleCita from "../../../Screen/Citas/DetalleCita";
 import EditarCita from "../../../Screen/Citas/EditarCita";
 import AgregarCita from "../../../Screen/Citas/AgregarCita";
 
@@ -35,12 +36,6 @@ export default function CitasStack () {
                 name= "ListarCitas"
                 component={ListarCita}
                 options={{ title: "Citas Programadas" }} // Título del encabezado para esta pantalla
-            />
-            {/* Pantalla para mostrar los detalles de una cita específica */}
-            <Stack.Screen
-                name= "DetalleCitas"
-                component={DetalleCita}
-                options={{ title: "Detalle de Cita" }} // Título del encabezado
             />
             {/* Pantalla para editar una cita existente */}
             <Stack.Screen

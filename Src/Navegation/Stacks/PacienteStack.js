@@ -1,7 +1,6 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import ListarPaciente from "../../../Screen/Pacientes/ListarPaciente";
-import DetallePaciente from "../../../Screen/Pacientes/DetallePaciente";
 import EditarPaciente from "../../../Screen/Pacientes/EditarPaciente";
 import AgregarPaciente from "../../../Screen/Pacientes/AgregarPaciente";
 
@@ -14,11 +13,6 @@ export default function PacientesStack() {
                 name="ListarPacientes"
                 component={ListarPaciente}
                 options={{ title: "Pacientes" }}
-            />
-            <Stack.Screen
-                name="DetallePaciente"
-                component={DetallePaciente}
-                options={{ title: "Detalle Paciente" }}
             />
             <Stack.Screen
                 name="EditarPaciente"

@@ -36,21 +36,6 @@ export const listarPacientes = async () => {
     }
 }
 
-export const obtenerPacientePorId = async (id) => {
-    try {
-        const response = await api.get(`/obtenerPacientePorId/${id}`);
-        console.log(`Respuesta obtenerPacientePorId (${id}):`, response.data);
-        return { success: true, data: response.data };
-    } catch (error) {
-        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error(`Error al obtener paciente por ID ${id}:`, error.response ? error.response.data : error.message);
-        return {
-            success: false,
-            message: errorMessage,
-        };
-    }
-};
-
 
 export const eliminarPaciente = async (id) => {
     console.log("Intentando eliminar paciente con ID:", id);

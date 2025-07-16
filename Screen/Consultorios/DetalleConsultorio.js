@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "react-native";
 import BotonComponent from "../../components/BottonComponent";
-import { obtenerConsultorioPorId } from "../../Src/Servicios/ConsultorioService";
 import { listarSedes } from "../../Src/Servicios/SedeService";
 
 import styles from "../../Styles/DetalleConsultorioStyles";
@@ -30,7 +29,7 @@ export default function DetalleConsultorio({ route, navigation }) {
             setLoading(true); // Inicia el estado de carga
             try {
                 // 1. Cargar el consultorio por su ID utilizando el servicio `obtenerConsultorioPorId`.
-                const consultorioResult = await obtenerConsultorioPorId(consultorioId);
+                const consultorioResult = await (consultorioId);
                 if (consultorioResult.success) {
                     setConsultorio(consultorioResult.data); // Almacena los datos del consultorio
 

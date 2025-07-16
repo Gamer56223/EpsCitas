@@ -1,6 +1,5 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import ListarEps from "../../../Screen/Eps/ListarEps";
-import DetalleEps from "../../../Screen/Eps/DetalleEps";
 import EditarEps from "../../../Screen/Eps/EditarEps";
 import AgregarEps from "../../../Screen/Eps/AgregarEps";
 
@@ -15,11 +14,6 @@ export default function EpsStack () {
                 options={{
                     title: "EPS" ,
                 }}
-            />
-            <Stack.Screen
-                name= "DetalleEps"
-                component={DetalleEps}
-                options={{ title: "Detalle EPS" }}
             />
             <Stack.Screen
                 name= "EditarEps"

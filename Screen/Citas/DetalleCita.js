@@ -1,11 +1,14 @@
+// Ruta: Screen/Citas/DetalleCita.js
+
 import React, { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, SafeAreaView, Alert } from "react-native";
-import BotonComponent from "../../components/BottonComponent";
-import { obtenerCitaPorId } from "../../Src/Servicios/CitaService"; // Importar el servicio
+import BotonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
 
-import styles from "../../Styles/DetalleCitaStyles";
+import styles from "../../Styles/DetalleCitaStyles"; // Asegúrate de que la ruta sea correcta
+
 
 export default function DetalleCita({ route, navigation }) {
+    // Obtiene el ID de la cita de los parámetros de la ruta
     const { citaId } = route.params;
 
     const [cita, setCita] = useState(null);
@@ -15,7 +18,7 @@ export default function DetalleCita({ route, navigation }) {
         const fetchCitaDetails = async () => {
             setLoading(true);
             try {
-                const result = await obtenerCitaPorId(citaId);
+                const result = await  (citaId);
                 if (result.success) {
                     setCita(result.data);
                 } else {
@@ -30,7 +33,7 @@ export default function DetalleCita({ route, navigation }) {
         };
 
         fetchCitaDetails();
-    }, [citaId]); // Dependencia del efecto
+    }, [citaId]); // Dependencia del efecto: se ejecuta cuando citaId cambia
 
     if (loading) {
         return (
@@ -86,4 +89,3 @@ export default function DetalleCita({ route, navigation }) {
         </SafeAreaView>
     );
 }
-

@@ -1,4 +1,6 @@
-import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native'; // Importar SafeAreaView y StatusBar
+// Ruta: Screen/Citas/ListarCita.js
+
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import CitaCard from '../../components/CitaCard'; // Asegúrate de que la ruta sea correcta
@@ -35,7 +37,6 @@ export default function ListarCita (){
 
             let tempMedicosMap = {};
             if (medicosRes.success) {
-                // console.log("Médicos cargados:", medicosRes.data); // Puedes descomentar para depurar
                 medicosRes.data.forEach(medico => {
                     tempMedicosMap[medico.id] = `${medico.Nombre} ${medico.Apellido}`;
                 });
@@ -47,7 +48,6 @@ export default function ListarCita (){
 
             let tempPacientesMap = {};
             if (pacientesRes.success) {
-                // console.log("Pacientes cargados:", pacientesRes.data); // Puedes descomentar para depurar
                 pacientesRes.data.forEach(paciente => {
                     tempPacientesMap[paciente.id] = `${paciente.Nombre} ${paciente.Apellido}`;
                 });
@@ -59,7 +59,6 @@ export default function ListarCita (){
 
             let tempConsultoriosMap = {};
             if (consultoriosRes.success) {
-                // console.log("Consultorios cargados:", consultoriosRes.data); // Puedes descomentar para depurar
                 consultoriosRes.data.forEach(consultorio => {
                     tempConsultoriosMap[consultorio.id] = consultorio.Nombre;
                 });
@@ -71,7 +70,6 @@ export default function ListarCita (){
 
             let tempEpsMap = {};
             if (epsRes.success) {
-                // console.log("EPS cargadas:", epsRes.data); // Puedes descomentar para depurar
                 epsRes.data.forEach(epsItem => {
                     tempEpsMap[epsItem.id] = epsItem.Nombre;
                 });
@@ -82,10 +80,9 @@ export default function ListarCita (){
             }
 
             if (citasRes.success) {
-                // console.log("Citas cargadas:", citasRes.data); // Puedes descomentar para depurar
                 const enrichedCitas = citasRes.data.map(citaItem => {
-                    // *** IMPORTANTE: AJUSTA ESTAS CLAVES (idMedico, idPaciente, etc.)
-                    // SI NO COINCIDEN CON LOS NOMBRES REALES EN TU TABLA DE CITAS EN LARAVEL ***
+                    // IMPORTANTE: AJUSTA ESTAS CLAVES (idMedico, idPaciente, etc.)
+                    // SI NO COINCIDEN CON LOS NOMBRES REALES EN TU TABLA DE CITAS EN LARAVEL
                     const nombreMedico = tempMedicosMap[citaItem.idMedico] || 'Médico Desconocido';
                     const nombrePaciente = tempPacientesMap[citaItem.idPaciente] || 'Paciente Desconocido';
                     const nombreConsultorio = tempConsultoriosMap[citaItem.idConsultorio] || 'Consultorio Desconocido';
@@ -153,10 +150,6 @@ export default function ListarCita (){
         navigation.navigate("EditarCitas", {cita}); // Asegúrate de que 'EditarCitas' sea el nombre de tu ruta en CitasStack.js
     };
 
-    // *** NUEVA FUNCIÓN: handleDetalle para navegar a la pantalla de detalles ***
-    const handleDetalle = (citaId) => {
-        navigation.navigate("DetalleCitas", { citaId: citaId }); // Asegúrate de que 'DetalleCitas' sea el nombre de tu ruta en CitasStack.js
-    };
 
 
     if (loading) {
@@ -191,7 +184,7 @@ export default function ListarCita (){
                         nombreEps={item.nombreEps}
                         onEdit={() => handleEditar(item)}
                         onDelete={() => handleEliminar(item.id)}
-                        onDetail={() => handleDetalle(item.id)} // Pasando la nueva función al CitaCard
+                        
                     />
                 )}
                 ListEmptyComponent = {

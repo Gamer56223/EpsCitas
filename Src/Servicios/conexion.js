@@ -9,7 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"; // Importa
 
 // URL base de tu API. Asegúrate de que esta IP sea accesible desde tu dispositivo/emulador.
 // 'http://192.168.0.14:8000/api' es una IP local, podría necesitar ajustarse.
-const API_BASE_URL = "http://192.168.0.14:8000/api";
+const API_BASE_URL = "http://172.30.7.3:8000/api";
 
 // Crea una instancia de Axios con configuraciones predeterminadas.
 const api = axios.create({

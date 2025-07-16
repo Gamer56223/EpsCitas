@@ -96,9 +96,6 @@ export default function ListarConsultorio (){
         navigation.navigate("EditarConsultorios", { consultorio }); // Asegúrate de que 'EditarConsultorios' sea el nombre de tu ruta
     };
 
-    const handleVerDetalle = (consultorioId) => {
-        navigation.navigate("DetalleConsultorios", { consultorioId }); // Asegúrate de que 'DetalleConsultorios' sea el nombre de tu ruta
-    };
 
 
     if (loading) {

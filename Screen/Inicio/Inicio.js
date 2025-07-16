@@ -45,7 +45,7 @@ export default function Inicio() {
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Bienvenido a Eps</Text>
                     <Text style={styles.headerSubtitle}>Estado: <Text style={styles.statusText}>Habilitado</Text></Text>
-                    <Text style={styles.headerSubtitle}>Carlos Estiven Rodriguez</Text>
+                    <Text style={styles.headerSubtitle}>Carlos Estiven Rodríguez</Text>
                 </View>
 
                 <View style={styles.gridContainer}>

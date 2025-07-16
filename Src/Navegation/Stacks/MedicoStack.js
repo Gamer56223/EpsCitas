@@ -16,11 +16,6 @@ export default function MedicosStack () {
                 options={{ title: "Medico" }}
             />
              <Stack.Screen 
-                name= "DetalleMedico"
-                component={DetalleMedico}
-                options={{ title: "Detalle Medico" }}
-            />
-             <Stack.Screen 
                 name= "EditarMedico"
                 component={EditarMedico}
                 options={{ title: "Nuevo/Editar Medico" }}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "react-native";
 import BotonComponent from "../../components/BottonComponent";
-import { obtenerPacientePorId } from "../../Src/Servicios/PacienteService"; // <--- Asegúrate de crear esta función
+
 
 import styles from "../../Styles/DetallePacienteStyles";
 
@@ -14,7 +14,7 @@ export default function DetallePaciente({ route, navigation }) { // Renombrado a
     useEffect(() => {
         const fetchPaciente = async () => {
             try {
-                const result = await obtenerPacientePorId(pacienteId); // Llama a tu servicio real
+                const result = await o(pacienteId); // Llama a tu servicio real
                 if (result.success) {
                     setPaciente(result.data);
                 } else {

@@ -2,7 +2,8 @@ import { View, Text, TextInput, Alert, ActivityIndicator, TouchableWithoutFeedba
 import { Picker } from "@react-native-picker/picker";
 import BottonComponent from "../../components/BottonComponent";
 import { useState } from "react";
-import { Register } from "../../Src/Servicios/AuthService";
+// *** ESTA ES LA ÚNICA LÍNEA CORRECTA PARA IMPORTAR registerUser ***
+import { registerUser } from "../../Src/Servicios/AuthService"; // <-- Esta es la única línea que debe existir para importar registerUser
 import styles from "../../Styles/RegistroStyles";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -63,8 +64,8 @@ export default function RegistroScreen({ navigation }) {
         }
 
         try {
-            // Llama al servicio de autenticación para registrar al usuario
-            const result = await Register(name, email, password, role);
+            // Llama a 'registerUser'
+            const result = await registerUser(name, email, password, role);
 
             if (result.success) {
                 // Si el registro es exitoso, muestra una alerta y navega a la pantalla de Login
@@ -90,17 +91,13 @@ export default function RegistroScreen({ navigation }) {
     };
 
     return (
-        // TouchableWithoutFeedback y Keyboard.dismiss permiten cerrar el teclado al tocar fuera de los inputs.
-        // ScrollView permite que el contenido sea desplazable si excede el tamaño de la pantalla.
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.container}>
                     <Text style={styles.title}>Registrarse</Text>
 
-                    {/* Muestra un mensaje de error si existe */}
                     {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-                    {/* Input para el Nombre Completo con icono */}
                     <View style={styles.inputContainer}>
                         <Icon name="person" size={24} color="#888" style={styles.icon} />
                         <TextInput
@@ -112,7 +109,6 @@ export default function RegistroScreen({ navigation }) {
                         />
                     </View>
 
-                    {/* Input para el Correo Electrónico con icono */}
                     <View style={styles.inputContainer}>
                         <Icon name="email" size={24} color="#888" style={styles.icon} />
                         <TextInput
@@ -126,21 +122,19 @@ export default function RegistroScreen({ navigation }) {
                         />
                     </View>
 
-                    {/* Input para la Contraseña con icono */}
                     <View style={styles.inputContainer}>
                         <Icon name="lock" size={24} color="#888" style={styles.icon} />
                         <TextInput
                             style={styles.input}
                             placeholder="Contraseña"
                             placeholderTextColor="#888"
-                            secureTextEntry // Oculta el texto ingresado
+                            secureTextEntry
                             value={password}
                             onChangeText={setPassword}
                             autoCapitalize="none"
                         />
                     </View>
 
-                    {/* Input para Confirmar Contraseña con icono */}
                     <View style={styles.inputContainer}>
                         <Icon name="lock-reset" size={24} color="#888" style={styles.icon} />
                         <TextInput
@@ -154,7 +148,6 @@ export default function RegistroScreen({ navigation }) {
                         />
                     </View>
 
-                    {/* Selector de Rol */}
                     <Text style={styles.label}>Selecciona tu Rol:</Text>
                     <View style={styles.pickerContainer}>
                         <Picker
@@ -168,15 +161,13 @@ export default function RegistroScreen({ navigation }) {
                         </Picker>
                     </View>
 
-                    {/* Botón para registrarse. Muestra un ActivityIndicator si está cargando. */}
                     <BottonComponent
-                        title={loading ? <ActivityIndicator color="#fff" /> : "Registrarse"} // Texto o spinner según el estado de carga
+                        title={loading ? <ActivityIndicator color="#fff" /> : "Registrarse"}
                         onPress={handleRegister}
-                        disabled={loading} // Deshabilita el botón mientras la operación está en curso
+                        disabled={loading}
                         buttonStyle={styles.registerButtonPrimary}
                         textStyle={styles.buttonText}
                     />
-                    {/* Botón para navegar a la pantalla de Iniciar Sesión */}
                     <BottonComponent
                         title="¿Ya tienes cuenta?, Iniciar Sesión"
                         onPress={() => navigation.navigate("Login")}

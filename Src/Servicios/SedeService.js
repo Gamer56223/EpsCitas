@@ -37,21 +37,7 @@ export const listarSedes = async () => {
     }
 }
 
-// *** NUEVA FUNCIÓN: obtenerSedePorId ***
-export const obtenerSedePorId = async (id) => {
-    try {
-        const response = await api.get(`/mostrarSede/${id}`); // Asumiendo que tu ruta es /mostrarSede/{id}
-        console.log(`Respuesta obtenerSedePorId (${id}):`, response.data);
-        return { success: true, data: response.data };
-    } catch (error) {
-        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error(`Error al obtener sede por ID ${id}:`, error.response ? error.response.data : error.message);
-        return {
-            success: false,
-            message: errorMessage,
-        };
-    }
-};
+
 
 
 export const eliminarSede = async (id) => {

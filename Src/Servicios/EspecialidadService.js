@@ -92,19 +92,6 @@ export const crearEspecialidad = async (especialidadData) => {
  * @returns {Promise<object>} Un objeto con `success: true` y `data` (la especialidad),
  * o `success: false` y un `message` de error.
  */
-export const obtenerEspecialidadPorId = async (id) => {
-    try {
-        const response = await api.get(`/mostrarEspecialidad/${id}`); // Realiza una petición GET con el ID.
-        return { success: true, data: response.data }; // Retorna éxito y los datos.
-    } catch (error) {
-        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión con el servidor.";
-        console.error(`Error al obtener especialidad ${id}:`, error.response ? error.response.data : error.message);
-        return {
-            success: false,
-            message: errorMessage,
-        };
-    }
-};
 
 /**
  * editarEspecialidad: Actualiza una especialidad médica existente por su ID.

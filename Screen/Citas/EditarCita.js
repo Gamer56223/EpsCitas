@@ -3,6 +3,9 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator,
 import { useRoute } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { crearCita, editarCita } from "../../Src/Servicios/CitaService";
+import { DetalleCitaId } from "../../Src/Servicios/CitaService";
+
+import * as Notifications from 'expo-notifications';
 
 import styles from "../../Styles/EditarCitaStyles";
 
@@ -51,6 +54,13 @@ export default function EditarCita({ navigation }) {
 
             if (result.success) {
                 Alert.alert("Éxito", esEdicion ? "Cita actualizada correctamente" : "Cita creada correctamente");
+                await Notifications.scheduleNotificationAsync({
+                    content: {
+                        title: "Nueva Cita Registrada",
+                        body:`El cambio de ${hora} ha sido registrado correctamente`,
+                    },
+                    trigger: { seconds: 2}, //se muestra dos segundos después
+                })
                 navigation.goBack();
             } else {
                 Alert.alert("Error", result.message || "No se pudo guardar la cita");

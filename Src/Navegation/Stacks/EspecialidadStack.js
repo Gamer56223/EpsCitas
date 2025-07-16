@@ -16,11 +16,6 @@ export default function EspecialidadesStack () {
                 options={{ title: "Especialidad" }}
             />
             <Stack.Screen
-                name= "DetalleEspecialidad"
-                component={DetalleEspecialidad}
-                options={{ title: "Detalle Especialidad" }}
-            />
-            <Stack.Screen
                 name= "EditarEspecialidad"
                 component={EditarEspecialidad}
                 options={{ title: "Editar Especialidad" }}

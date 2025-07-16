@@ -1,4 +1,6 @@
-import api from "./conexion";
+// Ruta: Src/Servicios/CitaService.js
+
+import api from "./conexion"; // Asegúrate de que la ruta sea correcta
 
 // Función auxiliar para formatear mensajes de error
 const formatErrorMessage = (errorResponseData) => {
@@ -37,26 +39,12 @@ export const listarCitas = async () => {
     }
 }
 
-export const obtenerCitaPorId = async (id) => { // Función agregada
-    try {
-        const response = await api.get(`/mostrarCita/${id}`); // Asumiendo que Laravel tiene una ruta como /mostrarCita/{id}
-        console.log("Respuesta obtenerCitaPorId:", response.data);
-        return { success: true, data: response.data };
-    } catch (error) {
-        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
-        console.error(`Error al obtener cita ${id}:`, error.response ? error.response.data : error.message);
-        return {
-            success: false,
-            message: errorMessage,
-        };
-    }
-};
 
 export const eliminarCita = async (id) => {
     console.log("Intentando eliminar cita con ID:", id);
     try {
         const response = await api.delete(`/eliminarCita/${id}`);
-        console.log("Respuesta eliminarEspecialidad:", response.data);
+        console.log("Respuesta eliminarCita:", response.data);
         return { success: true, message: response.data.message || "Cita eliminada correctamente" };
     } catch (error) {
         const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";

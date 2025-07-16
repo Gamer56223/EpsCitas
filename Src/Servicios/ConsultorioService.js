@@ -71,22 +71,7 @@ export const listarConsultorios = async () => {
  * @returns {object} Un objeto con `success: true` y `data` (el consultorio),
  * o `success: false` y un `message` de error.
  */
-export const obtenerConsultorioPorId = async (id) => {
-    try {
-        // Realiza una petición GET a la ruta `/listarConsultorios/{id}`.
-        // Se corrigió para usar 'listarConsultorios/{id}' para consistencia con un posible 'api.php' en el backend.
-        const response = await api.get(`/listarConsultorios/${id}`);
-        console.log("Respuesta obtenerConsultorioPorId:", response.data);
-        return { success: true, data: response.data };
-    } catch (error) {
-        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión con el servidor.";
-        console.error("Error al obtener consultorio por ID:", error.response ? error.response.data : error.message);
-        return {
-            success: false,
-            message: errorMessage,
-        };
-    }
-};
+
 
 /**
  * eliminarConsultorio: Elimina un consultorio por su ID.

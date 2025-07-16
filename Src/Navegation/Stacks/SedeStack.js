@@ -1,7 +1,6 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import ListarSede from "../../../Screen/Sedes/ListarSede";
-import DetalleSede from "../../../Screen/Sedes/DetalleSede";
 import EditarSede from "../../../Screen/Sedes/EditarSede";
 import AgregarSede from "../../../Screen/Sedes/AgregarSede";
 
@@ -15,11 +14,6 @@ export default function SedesStack () {
                 name= "ListarSedes"
                 component={ListarSede}
                 options={{ title: "Sedes" }}
-            />
-             <Stack.Screen 
-                name= "DetalleSede"
-                component={DetalleSede}
-                options={{ title: "Detalle Sede" }}
             />
              <Stack.Screen 
                 name= "EditarSede"
