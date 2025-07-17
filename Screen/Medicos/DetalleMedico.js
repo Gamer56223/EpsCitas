@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "
 import BotonComponent from "../../components/BottonComponent";
 import { listarMedicos } from "../../Src/Servicios/MedicoService";
 import { listarEspecialidades } from "../../Src/Servicios/EspecialidadService"; // Necesitas esto para mostrar el nombre de la especialidad
+import { DetalleMedicoId } from "../../Src/Servicios/MedicoService";
 
 import styles from "../../Styles/DetalleMedicoStyles";
 

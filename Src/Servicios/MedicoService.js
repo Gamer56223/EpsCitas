@@ -35,6 +35,21 @@ export const listarMedicos = async () => {
     }
 }
 
+export const DetalleMedicoId = async () => {
+    try {
+        const response = await api.get(`/listarMedicos/${id}`);
+        console.log("Respuesta detalleMedico:", response.data);
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
+        console.error("Error al mostrar Detalle Medico:", error.response ? error.response.data : error.message);
+        return {
+            success: false,
+            message: errorMessage,
+        };
+    }
+};
+
 export const eliminarMedico = async (id) => {
     console.log("Intentando eliminar medico con ID:", id);
     try {

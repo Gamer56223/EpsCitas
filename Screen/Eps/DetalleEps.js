@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "react-native";
+import { View, Text, ActivityIndicator, SafeAreaView, Alert, ScrollView } from "react-native";
 import BotonComponent from "../../components/BottonComponent";
-import { listarEps } from "../../Src/Servicios/EpsService";
-
+import { DetalleEpsId } from "../../Src/Servicios/EpsService"; // Importamos la función correcta para el detalle
 import styles from "../../Styles/DetalleEpsStyles";
 
 export default function DetalleEps({ route, navigation }) {
-
     const { epsId } = route.params;
 
     const [eps, setEps] = useState(null);
@@ -16,22 +14,29 @@ export default function DetalleEps({ route, navigation }) {
         const fetchEpsDetails = async () => {
             setLoading(true);
             try {
-                const result = await listarEps();
+                // Aquí cambiamos la llamada: Usamos DetalleEpsId directamente
+                const result = await DetalleEpsId(epsId);
                 if (result.success) {
-                    const foundEps = result.data.find(e => e.id === epsId);
-                    setEps(foundEps);
+                    setEps(result.data);
                 } else {
                     Alert.alert("Error", result.message || "No se pudo cargar el detalle de la Eps.");
+                    setEps(null);
                 }
             } catch (error) {
                 console.error("Error al obtener detalles de la EPS:", error);
                 Alert.alert("Error", "Ocurrió un error inesperado al cargar el detalle de la Eps.");
+                setEps(null);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchEpsDetails();
+        if (epsId) {
+            fetchEpsDetails();
+        } else {
+            setLoading(false);
+            Alert.alert("Error", "ID de EPS no proporcionado.");
+        }
     }, [epsId]);
 
     if (loading) {
@@ -64,15 +69,22 @@ export default function DetalleEps({ route, navigation }) {
         <SafeAreaView style={[styles.container, { backgroundColor: '#f0f4f8' }]}>
             <Text style={[styles.title, { color: '#2c3e50' }]}>Detalle de la Eps</Text>
 
-            <View style={[styles.detailCard, { backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)' }]}>
-                <Text style={[styles.epsName, { color: '#2c3e50' }]}>{eps.Nombre}</Text>
-                <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>ID: </Text>{eps.id}</Text>
-                <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Nombre: </Text>{eps.Nombre}</Text>
-                <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Dirección: </Text>{eps.Direccion}</Text>
-                <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Telefono: </Text>{eps.Telefono}</Text>
-                <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Nit: </Text>{eps.Nit}</Text>
-                <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Id Especialidad: </Text>{eps.IdEspecialidad}</Text>
-            </View>
+            <ScrollView contentContainerStyle={styles.detailScrollCard}>
+                <View style={[styles.detailCardContent, { backgroundColor: '#FFFFFF', shadowColor: 'rgba(0, 0, 0, 0.1)' }]}>
+                    <Text style={[styles.epsName, { color: '#2c3e50' }]}>{eps.Nombre}</Text>
+                    <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>ID: </Text>{eps.id}</Text>
+                    {/* <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Nombre: </Text>{eps.Nombre}</Text> */}
+                    <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Dirección: </Text>{eps.Direccion}</Text>
+                    <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Teléfono: </Text>{eps.Telefono}</Text>
+                    <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Nit: </Text>{eps.Nit}</Text>
+                    <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Id Especialidad: </Text>{eps.IdEspecialidad}</Text>
+                    {eps.especialidad && eps.especialidad.Nombre ? (
+                        <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Especialidad: </Text>{eps.especialidad.Nombre}</Text>
+                    ) : (
+                        <Text style={[styles.detailText, { color: '#5C6F7F' }]}><Text style={styles.detailLabel}>Especialidad ID: </Text>{eps.IdEspecialidad}</Text>
+                    )}
+                </View>
+            </ScrollView>
 
             <BotonComponent
                 title="Volver al Listado"
@@ -83,4 +95,3 @@ export default function DetalleEps({ route, navigation }) {
         </SafeAreaView>
     );
 }
-

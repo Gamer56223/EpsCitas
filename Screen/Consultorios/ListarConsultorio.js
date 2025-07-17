@@ -82,7 +82,7 @@ export default function ListarConsultorio (){
                             console.error("Error al eliminar consultorio:", error);
                             Alert.alert("Error", "No se pudo eliminar el consultorio debido a un error inesperado.");
                         }
-                    },
+                    }, 
                 },
             ]
         );
@@ -95,6 +95,10 @@ export default function ListarConsultorio (){
     const handleEditar = (consultorio) => {
         navigation.navigate("EditarConsultorios", { consultorio }); // Asegúrate de que 'EditarConsultorios' sea el nombre de tu ruta
     };
+
+    const handleDetalle = (consultorioId) => {
+        navigation.navigate("DetalleConsultorios", {consultorioId: consultorioId});
+    }
 
 
 
@@ -128,6 +132,7 @@ export default function ListarConsultorio (){
                         onEdit={() => handleEditar(item)}
                         onDelete={() => handleEliminar(item.id)}
                         onPress={() => handleVerDetalle(item.id)} // Si tienes una vista de detalle
+                        onDetail={() => handleDetalle(item.id)} // Si tienes una vista de detalle
                     />
                 )}
                 ListEmptyComponent={

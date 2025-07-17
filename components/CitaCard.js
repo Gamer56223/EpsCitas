@@ -29,7 +29,7 @@ const parsearFechaHora = (fechaStr, horaStr) => {
 };
 
 
-function CitaCard({ cita, nombreMedico, nombrePaciente, nombreConsultorio, nombreEps, onEdit, onDelete }) {
+function CitaCard({ cita, nombreMedico, nombrePaciente, nombreConsultorio, nombreEps, onEdit, onDelete, onDetail }) {
     
     const fechaHoraCita = parsearFechaHora(cita.Fecha, cita.Hora);
 
@@ -59,6 +59,9 @@ function CitaCard({ cita, nombreMedico, nombrePaciente, nombreConsultorio, nombr
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onDelete} style={styles.iconBtn}>
                     <Ionicons name="trash-outline" size={26} color="#D32F2F" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onDetail} style={styles.iconBtn}>
+                    <Ionicons name="bulb-outline" size={26} color="silver" />
                 </TouchableOpacity>
             </View>
         </View>

@@ -150,6 +150,10 @@ export default function ListarCita (){
         navigation.navigate("EditarCitas", {cita}); // 'EditarCitas' ruta en CitasStack.js
     };
 
+    const HandleDetalle = (citaId) => {
+        navigation.navigate("DetalleCitas", {citaId: citaId});
+    };
+
 
 
     if (loading) {
@@ -184,6 +188,7 @@ export default function ListarCita (){
                         nombreEps={item.nombreEps}
                         onEdit={() => handleEditar(item)}
                         onDelete={() => handleEliminar(item.id)}
+                        onDetail={() => HandleDetalle(item.id)}
                         
                     />
                 )}

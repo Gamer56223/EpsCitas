@@ -64,6 +64,21 @@ export const listarConsultorios = async () => {
     }
 };
 
+export const DetalleConsultorioId = async (id) => {
+    try {
+        const response = await api.get(`/listarConsultorios/${id}`);
+        console.log("Respues detalleConsultorios:", response.data);
+        return { success: true, data: response.data};
+    } catch (error) {
+        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión con el servidor.";
+        console.error("Error al mostrar detalle consultorio:", error.response ? error.response.data : error.message);
+        return {
+            success: false,
+            message: errorMessage,
+        };
+    }
+};
+
 /**
  * obtenerConsultorioPorId: Obtiene los detalles de un consultorio específico por su ID.
  *

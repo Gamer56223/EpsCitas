@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Alert } from "react-native";
 import BotonComponent from "../../components/BottonComponent";
-import { obtenerEspecialidadPorId } from "../../Src/Servicios/EspecialidadService"; 
+import { DetalleEspecialidadId } from "../../Src/Servicios/EspecialidadService";
 
 import styles from "../../Styles/DetalleEspecialidadStyles";
 
@@ -15,7 +15,7 @@ export default function DetalleEspecialidad({ route, navigation }) {
         const cargarDetalleEspecialidad = async () => {
             setLoading(true);
             try {
-                const result = await obtenerEspecialidadPorId(especialidadId); // Llama al servicio
+                const result = await DetalleEspecialidadId (especialidadId); // Llama al servicio
                 if (result.success) {
                     setEspecialidad(result.data);
                 } else {

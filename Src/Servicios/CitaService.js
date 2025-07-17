@@ -39,6 +39,21 @@ export const listarCitas = async () => {
     }
 }
 
+export const DetalleCitaId = async (id) => {
+    try {
+        const response = await api.get(`listarCitas/${id}`); // Corrected line
+        console.log("Respuesta DetalleCitas:", response.data);
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
+        console.error("Error al detalle cita:", error.response ? error.response.data : error.message);
+        return {
+            success: false,
+            message: errorMessage,
+        };
+    }
+};
+
 
 export const eliminarCita = async (id) => {
     console.log("Intentando eliminar cita con ID:", id);

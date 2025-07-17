@@ -25,6 +25,11 @@ export default function MedicosStack () {
                 component={AgregarMedico}
                 options={{ title: "Nuevo Medico" }}
             />
+            <Stack.Screen 
+                name= "DetalleMedico"
+                component={DetalleMedico}
+                options={{ title: "Nuevo Detalle Medico" }}
+            />
         </Stack.Navigator>
     );
 }

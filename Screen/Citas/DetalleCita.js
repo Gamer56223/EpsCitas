@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator, SafeAreaView, Alert } from "react-native";
 import BotonComponent from "../../components/BottonComponent"; // Asegúrate de que la ruta sea correcta
+import { DetalleCitaId } from "../../Src/Servicios/CitaService";
 
 import styles from "../../Styles/DetalleCitaStyles"; // Asegúrate de que la ruta sea correcta
 
@@ -18,7 +19,7 @@ export default function DetalleCita({ route, navigation }) {
         const fetchCitaDetails = async () => {
             setLoading(true);
             try {
-                const result = await  (citaId);
+                const result = await DetalleCitaId  (citaId);
                 if (result.success) {
                     setCita(result.data);
                 } else {

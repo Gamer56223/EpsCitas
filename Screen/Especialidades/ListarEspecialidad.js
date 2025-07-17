@@ -98,6 +98,10 @@ export default function ListarEspecialidad (){
         navigation.navigate("EditarEspecialidad", {especialidad}); // Navega a 'EditarEspecialidad' con los datos
     }
 
+    const handleDetalle = (especialidadId) => {
+        navigation.navigate("DetalleEspecialidad", {especialidadId: especialidadId});
+    }
+
     // Muestra un indicador de carga si los datos están siendo obtenidos.
     if (loading) {
         return (
@@ -128,6 +132,7 @@ export default function ListarEspecialidad (){
                         especialidad={item}
                         onEdit={() => handleEditar (item)} // Pasa la función de edición con el item
                         onDelete={() => handleEliminar (item.id)} // Pasa la función de eliminación con el ID
+                        onDetail={() => handleDetalle (item.id)} // Pasa la función de detalles con el ID
                     />
                 )}
                 // Componente a mostrar si la lista está vacía

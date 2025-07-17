@@ -77,9 +77,13 @@ export default function ListarSede() {
         );
     }
 
-    const handleEditar = (sede) => {
-        navigation.navigate("EditarSede", { sede }); // Asegúrate de que esta ruta exista y reciba 'sede'
+    const handleEditar = (sedeId) => {
+        navigation.navigate("EditarSede", { sedeId: sedeId }); // Asegúrate de que esta ruta exista y reciba 'sede'
     };
+
+    const handleDetalle = (sedeId) => {
+        navigation.navigate("DetalleSede", { sedeId: sedeId});
+    }
 
     // Función para renderizar cada item de la FlatList
     const renderSedeItem = ({ item }) => (
@@ -88,6 +92,7 @@ export default function ListarSede() {
             onEdit={() => handleEditar(item)}
             onDelete={() => handleEliminar(item.id)}
             onPress={() => navigation.navigate('DetalleSede', { sedeId: item.id })} // Agregado para navegar al detalle
+            onDetail={() => handleDetalle(item.id)}
         />
     );
 

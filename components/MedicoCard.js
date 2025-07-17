@@ -15,7 +15,7 @@ import styles from '../Styles/MedicoCardStyles';
  * @param {function} props.onEdit - Función a ejecutar al presionar el botón de editar.
  * @param {function} props.onDelete - Función a ejecutar al presionar el botón de eliminar.
  */
-function MedicoCard({ medico, nombreEspecialidad, onEdit, onDelete }) {
+function MedicoCard({ medico, nombreEspecialidad, onEdit, onDelete, onDetail }) {
     return (
         <View style={styles.card}>
             <View style={styles.info}>
@@ -39,6 +39,9 @@ function MedicoCard({ medico, nombreEspecialidad, onEdit, onDelete }) {
                 {/* Botón para eliminar el médico con ícono de Ionicons */}
                 <TouchableOpacity onPress={onDelete} style={styles.iconBtn}>
                     <Ionicons name="trash-outline" size={26} color="#D32F2F" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onDetail} style={styles.iconBtn}>
+                    <Ionicons name="bulb-outline" size={26} color="silver" />
                 </TouchableOpacity>
             </View>
         </View>

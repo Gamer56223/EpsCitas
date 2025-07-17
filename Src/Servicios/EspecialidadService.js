@@ -64,6 +64,20 @@ export const listarEspecialidades = async () => {
     }
 };
 
+export const DetalleEspecialidadId = async (id) => {
+    try {
+        const response = await api.get(`/listarEspecialidades/${id}`);
+        return { success: true, data: response.data};
+    } catch (error) {
+        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión con el servidor.";
+        console.error("Error al mostrar detalle especialidad:", error.response ? error.response.data : error.message);
+        return {
+            success: false,
+            message: errorMessage,
+        };
+    }
+};
+
 /**
  * crearEspecialidad: Crea una nueva especialidad médica.
  *

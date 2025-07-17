@@ -25,6 +25,11 @@ export default function EspecialidadesStack () {
                 component={AgregarEspecialidad}
                 options={{ title: "Nueva Especialidad" }}
             />
+            <Stack.Screen
+                name= "DetalleEspecialidad"
+                component={DetalleEspecialidad}
+                options={{ title: "Nuevo Detalle Especialidad" }}
+            />
         </Stack.Navigator>
     );
 }

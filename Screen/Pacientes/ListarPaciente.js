@@ -1,11 +1,11 @@
 import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import PacienteCard from '../../components/PacienteCard'; // Asegúrate de que la ruta sea correcta
+import PacienteCard from '../../components/PacienteCard';
 import { useNavigation } from "@react-navigation/native";
 import { listarPacientes, eliminarPaciente } from "../../Src/Servicios/PacienteService";
 
-import styles from '../../Styles/ListarPacienteStyles'; // Asegúrate de que la ruta sea correcta
+import styles from '../../Styles/ListarPacienteStyles';
 
 export default function ListarPaciente() {
     const [pacientes, setPacientes] = useState([]);
@@ -29,7 +29,6 @@ export default function ListarPaciente() {
         }
     };
 
-    // Recargar pacientes cada vez que la pantalla se enfoca
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', handlePacientes);
         return unsubscribe;
@@ -48,7 +47,6 @@ export default function ListarPaciente() {
                         try {
                             const result = await eliminarPaciente(id);
                             if (result.success) {
-                                // Actualiza el estado para reflejar la eliminación sin recargar toda la lista del backend
                                 setPacientes(prevPacientes => prevPacientes.filter((p) => p.id !== id));
                                 Alert.alert("Éxito", "Paciente eliminado correctamente.");
                             } else {
@@ -65,11 +63,15 @@ export default function ListarPaciente() {
     };
 
     const handleCrear = () => {
-        navigation.navigate('CrearPaciente'); // Asegúrate que 'CrearPaciente' es el nombre correcto en tu Stack Navigator
+        navigation.navigate('CrearPaciente');
     };
 
     const handleEditar = (paciente) => {
-        navigation.navigate("EditarPaciente", { paciente }); // Asegúrate que 'EditarPaciente' es el nombre correcto en tu Stack Navigator
+        navigation.navigate("EditarPaciente", { paciente });
+    };
+
+    const handleDetalle = (pacienteId) => {
+        navigation.navigate("DetallePaciente", { pacienteId: pacienteId});
     };
 
     if (loading) {
@@ -86,7 +88,8 @@ export default function ListarPaciente() {
             paciente={item}
             onEdit={() => handleEditar(item)}
             onDelete={() => handleEliminar(item.id)}
-            onPress={() => navigation.navigate('DetallePaciente', { pacienteId: item.id })} // Asegúrate que 'DetallePaciente' es el nombre correcto
+            onPress={() => navigation.navigate('DetallePaciente', { pacienteId: item.id })}
+            onDetail={() => handleDetalle(item.id)}
         />
     );
 
@@ -94,7 +97,6 @@ export default function ListarPaciente() {
         <SafeAreaView style={styles.fullScreenContainer}>
             <StatusBar barStyle="dark-content" backgroundColor="#F5F8FA" />
 
-            {/* Nuevo encabezado */}
             <View style={styles.headerContainer}>
                 <Ionicons name="body-outline" size={32} color="#007BFF" style={styles.headerIcon} />
                 <Text style={styles.headerTitle}>Gestión de Pacientes</Text>
@@ -106,7 +108,7 @@ export default function ListarPaciente() {
                 renderItem={renderPacienteItem}
                 ListEmptyComponent={
                     <View style={styles.emptyListContainer}>
-                        <Ionicons name="body-outline" size={80} color="#BDC3C7" /> {/* Icono para pacientes */}
+                        <Ionicons name="body-outline" size={80} color="#BDC3C7" />
                         <Text style={styles.emptyText}>No hay pacientes registrados.</Text>
                         <Text style={styles.emptyText}>¡Crea un nuevo paciente!</Text>
                     </View>

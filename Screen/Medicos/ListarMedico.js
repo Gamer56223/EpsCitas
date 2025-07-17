@@ -98,6 +98,10 @@ export default function ListarMedico (){
 
     const handleEditar = (medico) => {
         navigation.navigate("EditarMedico", { medico }); // Asegúrate de que 'EditarMedico' sea el nombre de tu ruta
+    };
+
+    const handleDetalle = (medicoId) => {
+        navigation.navigate("DetalleMedico", {medicoId: medicoId});
     }
 
     if (loading) {
@@ -129,6 +133,7 @@ export default function ListarMedico (){
                         nombreEspecialidad={item.nombreEspecialidad} // Pasamos el nombre de la especialidad
                         onEdit={() => handleEditar(item)}
                         onDelete={() => handleEliminar(item.id)}
+                        onDetail={() => handleDetalle(item.id)}
                     />
                 )}
                 ListEmptyComponent={

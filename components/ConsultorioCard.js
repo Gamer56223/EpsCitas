@@ -14,7 +14,7 @@ import styles from '../Styles/ConsultorioCardStyles';
  * @param {function} props.onEdit - Función que se ejecuta al presionar el botón de editar.
  * @param {function} props.onDelete - Función que se ejecuta al presionar el botón de eliminar.
  */
-function ConsultorioCard({ consultorio, nombreSede, onEdit, onDelete }) {
+function ConsultorioCard({ consultorio, nombreSede, onEdit, onDelete, onDetail }) {
     return (
         <View style={styles.card}>
             <View style={styles.info}>
@@ -32,6 +32,9 @@ function ConsultorioCard({ consultorio, nombreSede, onEdit, onDelete }) {
                 {/* Botón para eliminar el consultorio con ícono de Ionicons */}
                 <TouchableOpacity onPress={onDelete} style={styles.iconBtn}>
                     <Ionicons name="trash-outline" size={26} color="#D32F2F" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onDetail} style={styles.iconBtn}>
+                    <Ionicons name="bulb-outline" size={26} color="silver" />
                 </TouchableOpacity>
             </View>
         </View>

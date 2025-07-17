@@ -20,7 +20,6 @@ const formatErrorMessage = (errorResponseData) => {
     return "Error desconocido";
 };
 
-
 export const listarPacientes = async () => {
     try {
         const response = await api.get("/listarPacientes");
@@ -36,6 +35,20 @@ export const listarPacientes = async () => {
     }
 }
 
+export const DetallePacienteId = async (id) => {
+    try {
+        const response = await api.get(`/listarPacientes/${id}`); // Cambiado a /listarPacientes/{id} para consistencia con Sedes
+        console.log("Respuesta Detalle Paciente:", response.data);
+        return { success: true, data: response.data };
+    } catch (error) {
+        const errorMessage = error.response ? formatErrorMessage(error.response.data) : "Error de conexión";
+        console.error("Error al detalle pacientes:", error.response ? error.response.data : error.message);
+        return {
+            success: false,
+            message: errorMessage,
+        };
+    }
+}
 
 export const eliminarPaciente = async (id) => {
     console.log("Intentando eliminar paciente con ID:", id);

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, ScrollView, Alert } from "react-native"; // Añadido ScrollView y Alert
 import BotonComponent from "../../components/BottonComponent";
-import { obtenerSedePorId } from "../../Src/Servicios/SedeService"; // Importar el servicio para obtener sede por ID
+import { DetalleSedeId } from "../../Src/Servicios/SedeService";
+
+import styles from "../../Styles/DetalleSedeStyles";
 
 export default function DetalleSede({ route, navigation }) {
     const { sedeId } = route.params;
@@ -12,7 +14,7 @@ export default function DetalleSede({ route, navigation }) {
     useEffect(() => {
         const fetchSede = async () => {
             try {
-                const result = await obtenerSedePorId(sedeId); // Llama a tu servicio real
+                const result = await DetalleSedeId (sedeId); // Llama a tu servicio real
                 if (result.success) {
                     setSede(result.data);
                 } else {
