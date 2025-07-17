@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, Dimensions } from 'react-native';
+import React, { useState } from 'react'; // Importa useState
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, Dimensions, Platform } from 'react-native'; // Importa Platform
 import { Ionicons, Feather, Entypo, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -19,44 +19,74 @@ const availableWidthForGridContent = width - (CONTAINER_HORIZONTAL_PADDING * 2) 
 const itemWidth = (availableWidthForGridContent - (GRID_ITEM_HORIZONTAL_MARGIN * 4)) / 2;
 
 const cardData = [
-    { name: 'Citas', icon: <Fontisto name="date" size={24} color="#007BFF" />, flow: 'CitasFlow', color: '#E3F2FD' },
-    { name: 'Consultorios', icon: <MaterialCommunityIcons name="microsoft-office" size={24} color="#FFC107" />, flow: 'ConsultoriosFlow', color: '#FFF8E1' },
-    { name: 'Eps', icon: <MaterialIcons name="health-and-safety" size={24} color="#28A745" />, flow: 'EpsFlow', color: '#E8F5E9' },
-    { name: 'Especialidades', icon: <MaterialCommunityIcons name="professional-hexagon" size={24} color="#DC3545" />, flow: 'EspecialidadesFlow', color: '#FFEBEE' },
-    { name: 'Medicos', icon: <Fontisto name="doctor" size={24} color="#6F42C1" />, flow: 'MedicosFlow', color: '#F3E5F5' },
-    { name: 'Pacientes', icon: <FontAwesome6 name="people-group" size={24} color="#17A2B8" />, flow: 'PacientesFlow', color: '#E0F7FA' },
-    { name: 'Sedes', icon: <FontAwesome5 name="laptop-house" size={24} color="#FD7E14" />, flow: 'SedesFlow', color: '#FFF3E0' },
+    // Se añaden lightColor y darkColor para cada tarjeta
+    { name: 'Citas', icon: <Fontisto name="date" size={24} color="#007BFF" />, flow: 'CitasFlow', lightColor: '#E3F2FD', darkColor: '#1A237E' },
+    { name: 'Consultorios', icon: <MaterialCommunityIcons name="microsoft-office" size={24} color="#FFC107" />, flow: 'ConsultoriosFlow', lightColor: '#FFF8E1', darkColor: '#3F2C00' },
+    { name: 'Eps', icon: <MaterialIcons name="health-and-safety" size={24} color="#28A745" />, flow: 'EpsFlow', lightColor: '#E8F5E9', darkColor: '#0F3D1F' },
+    { name: 'Especialidades', icon: <MaterialCommunityIcons name="professional-hexagon" size={24} color="#DC3545" />, flow: 'EspecialidadesFlow', lightColor: '#FFEBEE', darkColor: '#4F1018' },
+    { name: 'Medicos', icon: <Fontisto name="doctor" size={24} color="#6F42C1" />, flow: 'MedicosFlow', lightColor: '#F3E5F5', darkColor: '#2C194D' },
+    { name: 'Pacientes', icon: <FontAwesome6 name="people-group" size={24} color="#17A2B8" />, flow: 'PacientesFlow', lightColor: '#E0F7FA', darkColor: '#053C47' },
+    { name: 'Sedes', icon: <FontAwesome5 name="laptop-house" size={24} color="#FD7E14" />, flow: 'SedesFlow', lightColor: '#FFF3E0', darkColor: '#4A2A04' },
 ];
 
 
 export default function Inicio() {
     const navigation = useNavigation();
+    const [isDarkMode, setIsDarkMode] = useState(false); // Estado para el modo oscuro
+
+    // Función para alternar el tema
+    const toggleTheme = () => {
+        setIsDarkMode(prevMode => !prevMode);
+    };
 
     const navigateToFlow = (flowName) => {
         navigation.navigate(flowName);
     };
 
-    return (
-        <SafeAreaView style={styles.safeArea}>
-            {/* Sets the status bar style for better visibility */}
-            <StatusBar barStyle="dark-content" backgroundColor="#F0F4F8" /> 
+    // Obtener los estilos dinámicamente según el tema actual
+    const themeStyles = getStyles(isDarkMode);
 
-            <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContent}>
-                <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Bienvenido a Eps</Text>
-                    <Text style={styles.headerSubtitle}>Estado: <Text style={styles.statusText}>Habilitado</Text></Text>
-                    <Text style={styles.headerSubtitle}>Carlos Estiven Rodríguez</Text>
+    // Estilos para la Status Bar basados en el tema
+    const statusBarStyle = isDarkMode ? 'light-content' : 'dark-content';
+    const statusBarBackgroundColor = isDarkMode ? themeStyles.safeArea.backgroundColor : '#F0F4F8';
+
+    return (
+        <SafeAreaView style={themeStyles.safeArea}>
+            {/* Sets the status bar style for better visibility */}
+            <StatusBar barStyle={statusBarStyle} backgroundColor={statusBarBackgroundColor} />
+
+            <ScrollView style={themeStyles.container} contentContainerStyle={themeStyles.scrollViewContent}>
+                <View style={themeStyles.header}>
+                    <Text style={themeStyles.headerTitle}>Bienvenido a Eps</Text>
+                    <Text style={themeStyles.headerSubtitle}>Estado: <Text style={themeStyles.statusText}>Habilitado</Text></Text>
+                    <Text style={themeStyles.headerSubtitle}>Carlos Estiven Rodríguez</Text>
                 </View>
 
-                <View style={styles.gridContainer}>
+                {/* Botón para alternar el modo oscuro */}
+                <TouchableOpacity onPress={toggleTheme} style={themeStyles.themeToggleButton}>
+                    <Ionicons
+                        name={isDarkMode ? "sunny-outline" : "moon-outline"} // Cambia el icono según el tema
+                        size={28}
+                        color={isDarkMode ? "#FFD700" : "#666"} // Color del icono (dorado para sol, gris para luna)
+                    />
+                </TouchableOpacity>
+
+                <View style={themeStyles.gridContainer}>
                     {cardData.map((item, index) => (
                         <TouchableOpacity
                             key={index}
-                            style={[styles.gridItem, { backgroundColor: item.color }]}
+                            style={[
+                                themeStyles.gridItem,
+                                { backgroundColor: isDarkMode ? item.darkColor : item.lightColor } // Color de fondo de la tarjeta dinámico
+                            ]}
                             onPress={() => navigateToFlow(item.flow)}
                         >
-                            {item.icon}
-                            <Text style={styles.gridItemText}>{item.name}</Text>
+                            {/* Clonar el icono para cambiar su color dinámicamente si es necesario */}
+                            {React.cloneElement(item.icon, {
+                                color: isDarkMode ? '#F8F8F8' : item.icon.props.color, // Color del icono dentro de la tarjeta
+                                size: 32 // Un poco más grande para mejor visibilidad
+                            })}
+                            <Text style={themeStyles.gridItemText}>{item.name}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -66,16 +96,15 @@ export default function Inicio() {
     );
 }
 
-const styles = StyleSheet.create({
+// Función que devuelve el objeto de estilos basado en el tema actual
+const getStyles = (isDarkMode) => StyleSheet.create({
     safeArea: {
         flex: 1,
-        // Changed background color to a light, harmonious shade
-        backgroundColor: '#F0F4F8', 
+        backgroundColor: isDarkMode ? '#121212' : '#F0F4F8', // Fondo principal de la SafeArea
     },
     container: {
         flex: 1,
-        // Changed background color to a light, harmonious shade
-        backgroundColor: '#F0F4F8', 
+        backgroundColor: isDarkMode ? '#121212' : '#F0F4F8', // Fondo del ScrollView
         padding: CONTAINER_HORIZONTAL_PADDING,
     },
     scrollViewContent: {
@@ -89,16 +118,32 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 32,
         fontWeight: '800',
-        color: '#333',
+        color: isDarkMode ? '#E0E0E0' : '#333', // Color del título
         marginBottom: 5,
     },
     headerSubtitle: {
         fontSize: 18,
-        color: '#666',
+        color: isDarkMode ? '#B0B0B0' : '#666', // Color del subtítulo
     },
     statusText: {
         fontWeight: 'bold',
-        color: '#28a745',
+        color: isDarkMode ? '#8BC34A' : '#28a745', // Color del texto de estado "Habilitado"
+    },
+    // Estilo para el botón de alternar tema
+    themeToggleButton: {
+        position: 'absolute',
+        // Ajuste para iOS (SafeArea) y Android
+        top: Platform.OS === 'ios' ? 50 : 25,
+        right: 20,
+        padding: 8,
+        borderRadius: 20,
+        backgroundColor: isDarkMode ? '#333333' : '#EFEFEF', // Fondo del botón
+        zIndex: 1, // Asegura que el botón esté por encima de otros elementos
+        shadowColor: isDarkMode ? '#000' : '#CCC',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     gridContainer: {
         flexDirection: 'row',
@@ -115,16 +160,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 8,
-        shadowColor: '#000',
+        shadowColor: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.1)', // Sombra de la tarjeta
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: isDarkMode ? 0.3 : 0.1,
         shadowRadius: 6,
     },
     gridItemText: {
         marginTop: 15,
         fontSize: 17,
         fontWeight: '600',
-        color: '#444',
+        color: isDarkMode ? '#F8F8F8' : '#444', // Color del texto de la tarjeta
         textAlign: 'center',
     },
 });
